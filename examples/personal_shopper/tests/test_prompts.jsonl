@@ -1,0 +1,4 @@
+{"text": "What would you have left if you spent $3 when you only had $2 to begin with", "groundtruth": "-1 dollars", "expected_assistant":"user_interface"}
+{"text": "I want to send back my shoes!", "expected_assistant": "returns"}
+{"text": "Give me money back for the socks I bought on your store", "expected_assistant": "refunds"}
+{"text": "I want a refund for my item ID 307, my user id is 2. Notify me via email.", "expected_plan":[{"tool": "initiate_refund", "args": {"user_id": "2", "item_id":"307"}},{"tool": "notify_customer", "args": {"user_id": "2", "method":"email"}}], "expected_assistant": "refunds"}

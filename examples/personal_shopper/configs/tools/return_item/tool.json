@@ -1,0 +1,17 @@
+{
+  "type": "function",
+  "function": {
+    "name": "return_item",
+    "description": "Tool when a customer wants to return an item. ONLY call if you have the item_id",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "description": "The numerical ID of the item to return. THIS MUST BE A NUMBER."
+        }
+      },
+      "required": ["item_id"]
+    }
+  }
+}

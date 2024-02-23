@@ -1,0 +1,19 @@
+{
+  "type": "function",
+  "function": {
+    "name": "submit_ticket",
+    "description": "Tool to submit a help ticket for an issue or request for the OpenAI help center.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Brief description of the technical details of the complaint."
+        }
+      },
+      "required": [
+        "description"
+      ]
+    }
+  }
+}

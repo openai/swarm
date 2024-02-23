@@ -1,0 +1,22 @@
+{
+  "type": "function",
+  "function": {
+    "name": "notify_customer",
+    "description": "Tool to notify a customer when you have made a return or exchange",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "The ID of the user to notify."
+        },
+        "method": {
+          "type": "string",
+          "enum": ["phone", "email"],
+          "description": "The method of notification to use."
+        }
+      },
+      "required": ["user_id", "method"]
+    }
+  }
+}

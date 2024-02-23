@@ -1,0 +1,21 @@
+{
+  "type": "function",
+  "function": {
+    "name": "initiate_refund",
+    "description": "Tool to issue a refund to a customer. ONLY call if you have the required arguments",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "The ID of the user to refund."
+        },
+        "item_id": {
+          "type": "number",
+          "description": "The item ID of the item to be refunded."
+        }
+      },
+      "required": ["user_id","item_id"]
+    }
+  }
+}

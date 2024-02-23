@@ -1,0 +1,13 @@
+[
+  {
+    "model": "gpt-4-0125-preview",
+    "description": "You are an OpenAI help center assistant who deals with questions about OpenAI products, such as GPT models, DALL-E, Whisper, etc.",
+    "log_flag": true,
+    "tools": [
+      "query_docs",
+      "submit_ticket",
+      "send_email"
+    ],
+    "planner": "sequential"
+  }
+]
