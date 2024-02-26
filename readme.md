@@ -14,7 +14,7 @@ Swarm is a flexible framework for building, scaling, and orchestrating a single 
 - [Deploying the Swarm](#deploying-the-swarm)
 - [Running tests](#running-tests-test_promptsjsonl)
 - [Sample configuration](#sample-configuration)
-- [Quickstart](#included-examples)
+- [Quickstart](#quickstart)
 
 ## Project Structure
 
