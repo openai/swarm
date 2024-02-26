@@ -1,5 +1,4 @@
 <div align="center">
-<img src="./assets/swarm_logo.png" alt="Swarm logo"/>
 
 # 🐝🐝🐝 Swarm 🐝🐝🐝
 
@@ -15,11 +14,11 @@ Swarm is a flexible framework for building, scaling, and orchestrating a single 
 - [Deploying the Swarm](#deploying-the-swarm)
 - [Running tests](#running-tests-test_promptsjsonl)
 - [Sample configuration](#sample-configuration)
-- [Included examples](#included-examples)
+- [Quickstart](#included-examples)
 
 ## Project Structure
 
-The Swarm frameworks allows you to create a system of one or multiple agents, with access to tools, to plan and complete tasks.
+The Swarm frameworks allows you to create a system of one or multiple agents, with access to tools, to plan and complete tasks. *Note:* Swarm only supports Python currently!
 
 The `configs` directory is where you'll define your assistants and tools. Do not modify the `src` directory.
 
@@ -235,7 +234,7 @@ a session where two task was completed.
 ]
 ```
 
-## Included examples
+## Quickstart
 
 This repository includes three examples of Swarm in action, located in the `examples/` folder:
 
