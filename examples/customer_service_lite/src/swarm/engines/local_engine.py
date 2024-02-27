@@ -152,10 +152,16 @@ class LocalEngine:
         plan_log = {'step': [], 'step_output': []}
 
         if not isinstance(plan, list):
-            plan = [plan]
-        original_plan = plan.copy()
+            plan_log['step'].append('response')
+            plan_log['step'].append(plan)
+            assistant.add_assistant_message(f"Response to user: {plan}")
+            print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
 
+            return plan_log, plan_log
+
+        original_plan = plan.copy()
         iterations = 0
+
 
         while plan and iterations< max_iterations:
             step = plan.pop(0)
