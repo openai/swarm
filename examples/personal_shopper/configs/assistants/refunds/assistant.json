@@ -4,6 +4,7 @@
     "description": "You are a refund assistant that handles all actions related to refunds.",
     "log_flag": true,
     "tools": ["notify_customer", "initiate_refund","respond_to_user"],
+    "assistants":["returns"],
     "planner": "sequential"
   }
 ]

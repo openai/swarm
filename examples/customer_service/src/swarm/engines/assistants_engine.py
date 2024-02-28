@@ -66,7 +66,7 @@ class AssistantsEngine:
 
                     # Create or update the assistant instance
                     existing_assistants = self.client.beta.assistants.list()
-                    print(existing_assistants)
+                 #   print(existing_assistants)
                  #   loaded_assistant = next((a for a in existing_assistants if a.name == assistant_name), None)
                 #    if not loaded_assistant:
                     assistant_tools = [{'type': 'function', 'function': tool_defs[name]} for name in assistant_tools_names if name in tool_defs]

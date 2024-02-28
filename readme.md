@@ -66,6 +66,7 @@ In `swarm_tasks.json`, users can define tasks for the swarm to execute by creati
 - **Description**: A description of the task to be performed.
 - **Assistant (Optional)**: The name of the assistant to assign the task to. Default is `user_interface` assistant.
 - **Iterate (Optional)**: A boolean indicating whether the output of each step should be fed as input to the next step in the plan. Use when tasks require plans with interdependent steps. Default is False.
+  - `max_iterations` in `configs/general.py` determines how many times to repeat a step before failing the Task. Default is 5.
 - **Evaluate (Optional)**: A boolean indicating whether task should be evaluated to determine if it was successfully completed. Default is False.
 
 ### 3. Engine options

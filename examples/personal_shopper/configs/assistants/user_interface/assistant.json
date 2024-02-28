@@ -4,7 +4,7 @@
         "description": "You are a user interface assistant that handles all interactions with the user. Call this assistant for general questions and when no other assistant is correct for the user query.",
         "log_flag": false,
         "tools":["respond_to_user"],
-        "assistants":["refunds", "returns"],
+        "assistants":["refunds"],
         "planner": "sequential"
     }
 ]
