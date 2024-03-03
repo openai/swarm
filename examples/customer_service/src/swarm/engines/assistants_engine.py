@@ -28,8 +28,8 @@ class AssistantsEngine:
         self.thread = self.client.beta.threads.create()
 
     def load_all_assistants(self):
-        base_path = 'assistants'
-        tools_base_path = 'tools'
+        base_path = 'configs/assistants'
+        tools_base_path = 'configs/tools'
 
         # Load individual tool definitions from the tools directory
         tool_defs = {}
@@ -55,6 +55,8 @@ class AssistantsEngine:
 
                     assistant_name = assistant_config.get('name', assistant_dir)
                     log_flag = assistant_config.pop('log_flag', False)
+                    sub_assistants = assistant_config.pop('assistants', [])
+                    planner = assistant_config.pop('planner', [])
 
                     # List of tool names from the assistant's config
                     assistant_tools_names = assistant_config.get('tools', [])
@@ -64,17 +66,18 @@ class AssistantsEngine:
 
                     # Create or update the assistant instance
                     existing_assistants = self.client.beta.assistants.list()
-                    loaded_assistant = next((a for a in existing_assistants if a.name == assistant_name), None)
+                 #   print(existing_assistants)
+                 #   loaded_assistant = next((a for a in existing_assistants if a.name == assistant_name), None)
+                #    if not loaded_assistant:
+                    assistant_tools = [{'type': 'function', 'function': tool_defs[name]} for name in assistant_tools_names if name in tool_defs]
+                    assistant_config['tools'] = assistant_tools
+                    assistant_config['name']=assistant_name
+                    print(f"Assistant '{assistant_name}' created.\n")
+                    loaded_assistant = self.client.beta.assistants.create(**assistant_config)
 
-                    if loaded_assistant:
-                        assistant_tools = [{'type': 'function', 'function': tool_defs[name]} for name in assistant_tools_names if name in tool_defs]
-                        assistant_config['tools'] = assistant_tools
-                        assistant_config['name']=assistant_name
-
-                        loaded_assistant = self.client.beta.assistants.create(**assistant_config)
-                        print(f"Assistant '{assistant_name}' created.\n")
-
-                    asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=loaded_assistant, tools=assistant_tools)
+                    asst_object = Assistant(name=assistant_name, log_flag=log_flag,
+                                             instance=loaded_assistant, tools=assistant_tools,
+                                        planner=planner, sub_assistants=sub_assistants)
                     self.assistants.append(asst_object)
 
 

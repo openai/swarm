@@ -2,7 +2,7 @@
   "type": "function",
   "function": {
     "name": "return_item",
-    "description": "Tool when a customer wants to return an item. ONLY call if you have the item_id",
+    "description": "Tool when a customer wants to return an item. ONLY call if you have the item_id. Only item_id is required.",
     "parameters": {
       "type": "object",
       "properties": {

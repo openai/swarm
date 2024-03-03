@@ -1,12 +1,11 @@
 from pydantic import BaseModel
-from typing import Any, Optional, List
+from typing import Any, Optional
 from src.swarm.conversation import Conversation
 from configs.prompts import EVALUATE_TASK_PROMPT
 from configs.general import Colors
 from src.utils import get_completion
 import json
 import time
-import ast
 
 
 class Assistant(BaseModel):
