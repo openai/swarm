@@ -3,7 +3,7 @@
     "model": "gpt-4-0125-preview",
     "description": "You are a returns assistant that handles all actions related to returns.",
     "log_flag": true,
-    "tools": ["notify_customer", "return_item","respond_to_user"],
+    "tools": ["notify_customer", "return_item"],
     "planner": "sequential"
   }
 ]

@@ -75,7 +75,7 @@ class LocalEngine:
                 if asst.tools:
                     print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.function.name for tool in asst.tools]} \n')
                 else:
-                    print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} Not available \n")
+                    print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
 
 
     def get_assistant(self, assistant_name):
@@ -162,9 +162,11 @@ class LocalEngine:
         original_plan = plan.copy()
         iterations = 0
 
-
         while plan and iterations< max_iterations:
-            step = plan.pop(0)
+            if isinstance(plan,list):
+              step = plan.pop(0)
+            else:
+                return "Error generating plan", "Error generating plan"
             assistant.add_tool_message(step)
             human_input_flag = next((tool.human_input for tool in assistant.tools if tool.function.name == step['tool']), False)
             if step['tool']:
@@ -185,9 +187,9 @@ class LocalEngine:
             plan_log['step'].append(step)
             plan_log['step_output'].append(tool_output)
 
-            if task.iterate and not is_dict_empty(plan_log):
+            if task.iterate and not is_dict_empty(plan_log) and plan:
                iterations += 1
-               new_task = ITERATE_PROMPT.format(task.description, plan, plan_log)
+               new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
                plan = run.generate_plan(new_task)
             # Store the output for the next iteration
 
@@ -253,17 +255,18 @@ class LocalEngine:
             if task.evaluate:
                 output = assistant.evaluate(self.client,task, plan_log)
                 if output is not None:
-                    success_flag = False if output[0].lower() == 'false' else bool(output[0])
+                    if not isinstance(output[0],bool):
+                     success_flag = False if output[0].lower() == 'false' else bool(output[0])
                     message = output[1]
                     if success_flag:
                         print(f'\n\033[93m{message}\033[0m')
                     else:
-                        print(f"{Colors.RED} {message}{Colors.ENDC}")
+                        print(f"{Colors.RED}{message}{Colors.ENDC}")
                     #log
                     assistant.add_assistant_message(message)
                 else:
                     message = "Error evaluating output"
-                    print(f"{Colors.RED} {message}{Colors.ENDC}")
+                    print(f"{Colors.RED}{message}{Colors.ENDC}")
                     assistant.add_assistant_message(message)
 
             return original_plan, plan_log
