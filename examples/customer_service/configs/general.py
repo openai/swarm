@@ -18,4 +18,4 @@ engine = 'local'
 
 max_iterations = 5
 
-persist = True
+persist = False

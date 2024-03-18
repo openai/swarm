@@ -19,7 +19,7 @@ def main():
     if args.create_task:
         task = Task(description=args.create_task, assistant=args.assistant or "user_interface",
                      evaluate=args.evaluate or False, iterate=args.iterate or False)
-        swarm = Swarm(tasks=[task], engine=args.engine, persist=args.persist)
+        swarm = Swarm(tasks=[task], engine=args.engine, persist=persist)
         swarm.deploy()
     elif args.test:
         swarm = Swarm(engine='local')
