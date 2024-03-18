@@ -12,11 +12,13 @@ from src.runs.run import Run
 
 
 class LocalEngine:
-    def __init__(self, client, tasks):
+    def __init__(self, client, tasks, persist=False):
         self.client = client
+        self.persist = persist
         self.assistants = []
         self.tasks = tasks
         self.tool_functions = []
+        self.last_assistant = None
 
     def load_tools(self):
         tools_path = 'configs/tools'
@@ -236,10 +238,15 @@ class LocalEngine:
             f"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
                 )
             #starting assistant, default is user_interface
-            assistant = self.get_assistant(task.assistant)
-            assistant.current_task_id = task.id
-            assistant.add_user_message(task.description
-                                       )
+            if self.persist and self.last_assistant is not None:
+                assistant = self.last_assistant
+            else:
+                assistant = self.get_assistant(task.assistant)
+                assistant.current_task_id = task.id
+                assistant.add_user_message(task.description
+                                    )
+
+            print('Current assistant',assistant.name)
             #triage based on current assistant
             selected_assistant = self.triage_request(assistant, task.description)
             if test_mode:
@@ -249,6 +256,8 @@ class LocalEngine:
                     print(f"No suitable assistant found for the task: {task.description}")
                 return None
 
+            #store current assistant
+            self.last_assistant = selected_assistant
             # Run the request with the determined or specified assistant
             original_plan, plan_log = self.initiate_run(task, selected_assistant,test_mode)
             #if evaluating the task

@@ -17,3 +17,5 @@ tasks_path = 'configs/swarm_tasks.json'
 engine = 'local'
 
 max_iterations = 5
+
+persist = True
