@@ -15,6 +15,7 @@ class LocalEngine:
     def __init__(self, client, tasks):
         self.client = client
         self.assistants = []
+        self.last_assistant = None
         self.tasks = tasks
         self.tool_functions = []
 

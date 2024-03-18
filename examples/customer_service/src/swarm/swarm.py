@@ -52,3 +52,6 @@ class Swarm:
                             expected_assistant=test_case['expected_assistant'])
                 self.tasks.append(task)
 
+    def add_task(self, task):
+        self.tasks.append(task)
+
