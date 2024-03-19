@@ -363,8 +363,6 @@ class LocalEngine:
                 if assistant.name == 'user_interface':
                     assistant.save_conversation()
              #assistant.print_conversation()
-            print("\n\n🍯🐝🍯 Swarm operations complete 🍯🐝🍯\n\n")
-
 
     def load_test_tasks(self, test_file_path):
         self.tasks = []  # Clear any existing tasks

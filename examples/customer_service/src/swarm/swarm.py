@@ -6,9 +6,10 @@ from src.swarm.engines.local_engine import LocalEngine
 from configs.general import Colors, tasks_path
 
 class Swarm:
-    def __init__(self,engine,tasks=[]):
+    def __init__(self,engine_name,tasks=[]):
         self.tasks = tasks
-        self.engine = engine
+        self.engine_name = engine_name
+        self.engine = None
         if not tasks:
             self.load_tasks()
 
@@ -18,13 +19,15 @@ class Swarm:
         Processes all tasks in the order they are listed in self.tasks.
         """
         client = OpenAI()
+        print('in here tho')
+        print(self.engine)
         #Initialize swarm first
-        if self.engine == 'assistants':
+        if self.engine_name == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
             self.engine = AssistantsEngine(client,self.tasks)
             self.engine.deploy(client,test_mode,test_file_path)
 
-        elif self.engine =='local':
+        elif self.engine_name =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
             self.engine = LocalEngine(client,self.tasks)
             self.engine.deploy(client,test_mode,test_file_path)

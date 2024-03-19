@@ -2,7 +2,7 @@ import shlex
 import argparse
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
-from configs.general import Colors, test_file_path, engine
+from configs.general import Colors, test_file_path, engine_name
 from src.validator import validate_all_tools, validate_all_assistants
 from src.arg_parser import parse_args
 
@@ -19,7 +19,7 @@ def main():
     args = parse_args()
 
     # Initialize the Swarm instance
-    swarm = Swarm(engine=args.engine)
+    swarm = Swarm(engine_name=engine_name)
 
     # Load predefined tasks if any
     swarm.load_tasks()
@@ -44,7 +44,7 @@ def main():
         task_parser.add_argument("--evaluate", action="store_true", help="Set the evaluate flag for the new task.")
         task_parser.add_argument("--assistant", type=str, default="user_interface", help="Specify the assistant for the new task.")
 
-        # Parse the task arguments
+        # Parse task arguments
         task_parsed_args = task_parser.parse_args(task_args)
 
         # Create and add the new task
@@ -53,10 +53,13 @@ def main():
                         evaluate=task_parsed_args.evaluate,
                         assistant=task_parsed_args.assistant)
         swarm.add_task(new_task)
-        print(swarm.tasks)
 
-        # Deploy the Swarm with the new task
+        # Deploy Swarm with the new task
         swarm.deploy()
+        swarm.tasks.clear()
+
+    print("\n\n🍯🐝🍯 Swarm operations complete 🍯🐝🍯\n\n")
+
 
 if __name__ == "__main__":
     main()
