@@ -282,6 +282,7 @@ class LocalEngine:
         assistant_pass = 0
         for task in self.tasks:
             original_plan, plan_log = self.run_task(task, test_mode=True)
+            print(original_plan, plan_log)
             last_response = plan_log['step_output'][-1]
 
             if task.groundtruth:

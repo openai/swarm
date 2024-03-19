@@ -8,5 +8,6 @@ def parse_args():
     parser.add_argument("--assistant", type=str, help="Specify the assistant for the new task.")
     parser.add_argument("--evaluate", action="store_true", help="Set the evaluate flag for the new task.")
     parser.add_argument("--iterate", action="store_true", help="Set the iterate flag for the new task.")
+    parser.add_argument("--input", action="store_true", help="If we want CLI")
 
     return parser.parse_args()

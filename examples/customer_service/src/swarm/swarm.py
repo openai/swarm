@@ -10,8 +10,6 @@ class Swarm:
         self.tasks = tasks
         self.engine_name = engine_name
         self.engine = None
-        if not tasks:
-            self.load_tasks()
 
 
     def deploy(self, test_mode=False,test_file_path=None):
@@ -44,16 +42,6 @@ class Swarm:
                 print(task.description)
                 self.tasks.append(task)
 
-    def load_test_tasks(self, test_file_path):
-        self.tasks = []  # Clear any existing tasks
-        with open(test_file_path, 'r') as file:
-            for line in file:
-                test_case = json.loads(line)
-                task = EvaluationTask(description=test_case['text'],
-                            assistant=test_case.get('assistant', 'auto'),
-                            groundtruth=test_case['groundtruth'],
-                            expected_assistant=test_case['expected_assistant'])
-                self.tasks.append(task)
 
     def add_task(self, task):
         self.tasks.append(task)
