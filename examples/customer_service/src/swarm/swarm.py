@@ -17,7 +17,6 @@ class Swarm:
         Processes all tasks in the order they are listed in self.tasks.
         """
         client = OpenAI()
-        print('in here tho')
         print(self.engine)
         #Initialize swarm first
         if self.engine_name == 'assistants':
