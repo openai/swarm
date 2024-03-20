@@ -6,11 +6,10 @@ from src.swarm.engines.local_engine import LocalEngine
 from configs.general import Colors, tasks_path
 
 class Swarm:
-    def __init__(self,engine,tasks=[]):
+    def __init__(self,engine_name,tasks=[]):
         self.tasks = tasks
-        self.engine = engine
-        if not tasks:
-            self.load_tasks()
+        self.engine_name = engine_name
+        self.engine = None
 
 
     def deploy(self, test_mode=False,test_file_paths=None):
@@ -18,13 +17,15 @@ class Swarm:
         Processes all tasks in the order they are listed in self.tasks.
         """
         client = OpenAI()
+        print('in here tho')
+        print(self.engine)
         #Initialize swarm first
-        if self.engine == 'assistants':
+        if self.engine_name == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
             self.engine = AssistantsEngine(client,self.tasks)
             self.engine.deploy(client,test_mode,test_file_paths)
 
-        elif self.engine =='local':
+        elif self.engine_name =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
             self.engine = LocalEngine(client,self.tasks)
             self.engine.deploy(client,test_mode,test_file_paths)
@@ -41,16 +42,6 @@ class Swarm:
                 print(task.description)
                 self.tasks.append(task)
 
-    def load_test_tasks(self, test_file_paths):
-        self.tasks = []  # Clear any existing tasks
-        for f in test_file_paths:
-            with open(f, 'r') as file:
-                for line in file:
-                    test_case = json.loads(line)
-                    task = EvaluationTask(description=test_case['text'],
-                                assistant=test_case.get('assistant', 'auto'),
-                                groundtruth=test_case['groundtruth'],
-                                expected_assistant=test_case['expected_assistant'],
-                                eval_function=test_case.get('eval_function', 'default'))
-                    self.tasks.append(task)
+    def add_task(self, task):
+        self.tasks.append(task)
 
