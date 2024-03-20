@@ -151,7 +151,6 @@ class LocalEngine:
         planner = assistant.planner
         plan = run.initiate(planner)
         plan_log = {'step': [], 'step_output': []}
-
         if not isinstance(plan, list):
             plan_log['step'].append('response')
             plan_log['step'].append(plan)
@@ -282,13 +281,11 @@ class LocalEngine:
         assistant_pass = 0
         for task in self.tasks:
             original_plan, plan_log = self.run_task(task, test_mode=True)
-            print(original_plan, plan_log)
-            last_response = plan_log['step_output'][-1]
 
             if task.groundtruth:
                 total_groundtruth += 1
                 # Assuming get_completion returns a response object with a content attribute
-                response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(last_response, task.groundtruth)}])
+                response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(original_plan, task.groundtruth)}])
                 if response.content.lower() == 'true':
                     groundtruth_pass += 1
                     print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{last_response}{Colors.ENDC}")
