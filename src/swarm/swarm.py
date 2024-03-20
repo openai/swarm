@@ -13,7 +13,7 @@ class Swarm:
             self.load_tasks()
 
 
-    def deploy(self, test_mode=False,test_file_path=None):
+    def deploy(self, test_mode=False,test_file_paths=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
@@ -22,12 +22,12 @@ class Swarm:
         if self.engine == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
             self.engine = AssistantsEngine(client,self.tasks)
-            self.engine.deploy(client,test_mode,test_file_path)
+            self.engine.deploy(client,test_mode,test_file_paths)
 
         elif self.engine =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
             self.engine = LocalEngine(client,self.tasks)
-            self.engine.deploy(client,test_mode,test_file_path)
+            self.engine.deploy(client,test_mode,test_file_paths)
 
     def load_tasks(self):
         self.tasks = []
@@ -41,14 +41,16 @@ class Swarm:
                 print(task.description)
                 self.tasks.append(task)
 
-    def load_test_tasks(self, test_file_path):
+    def load_test_tasks(self, test_file_paths):
         self.tasks = []  # Clear any existing tasks
-        with open(test_file_path, 'r') as file:
-            for line in file:
-                test_case = json.loads(line)
-                task = EvaluationTask(description=test_case['text'],
-                            assistant=test_case.get('assistant', 'auto'),
-                            groundtruth=test_case['groundtruth'],
-                            expected_assistant=test_case['expected_assistant'])
-                self.tasks.append(task)
+        for f in test_file_paths:
+            with open(f, 'r') as file:
+                for line in file:
+                    test_case = json.loads(line)
+                    task = EvaluationTask(description=test_case['text'],
+                                assistant=test_case.get('assistant', 'auto'),
+                                groundtruth=test_case['groundtruth'],
+                                expected_assistant=test_case['expected_assistant'],
+                                eval_function=test_case.get('eval_function', 'default'))
+                    self.tasks.append(task)
 
