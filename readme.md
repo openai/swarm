@@ -92,18 +92,19 @@ To deploy the swarm and run all the tasks defined in `swarm_tasks.py` file, simp
 ```bash
 python3 main.py
 ```
-You can also create and deploy new tasks with the following command:
+You can also create and deploy tasks using the CLI by running the following command:
 
 ```bash
-python3 main.py --create-task "Your task description"
+python3 main.py --input
 ```
 
-with the following arguments
+which will start a Swarm session in which you can enter tasks manually. Just write the task description in quotes,with any of the following desired arguments
 
-- **--create-task**: The description of the task you want to create.
 - **--assistant**: (Optional) The name of the assistant you want to assign the task to. Defaults to "user_interface" if not specified.
 - **--evaluate**: (Optional) Flag to indicate whether the task should be evaluated. Default is false.
 - **--iterate**: (Optional) Flag to indicate whether the task should iterate. Default is false.
+
+E.g.: `"Send an email summarizing George Washington's wikipedia page to Jason Smith" --iterate --evaluate`
 
 ## Running tests `test_prompts.jsonl`
 
