@@ -255,6 +255,7 @@ class LocalEngine:
             if task.evaluate:
                 output = assistant.evaluate(self.client,task, plan_log)
                 if output is not None:
+                    success_flag = False
                     if not isinstance(output[0],bool):
                      success_flag = False if output[0].lower() == 'false' else bool(output[0])
                     message = output[1]
