@@ -21,7 +21,6 @@ class EvalFunction:
     return False
     
   def numeric(self):
-    print(self.plan)
     number_pattern = r'\d+'
     response = self.plan['step'][-1]
     # Find all occurrences of numbers in the sentence
