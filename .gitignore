@@ -4,3 +4,7 @@
 **/logs/session_*
 **/test_runs/test_*
 **/assets/**
+
+.venv
+.env
+

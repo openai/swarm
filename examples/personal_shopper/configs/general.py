@@ -14,7 +14,7 @@ test_file_path = 'tests/test_prompts.jsonl'
 tasks_path = 'configs/swarm_tasks.json'
 
 #Options are 'assistants' or 'local'
-engine = 'local'
+engine_name = 'local'
 
 max_iterations = 5
 

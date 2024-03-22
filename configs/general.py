@@ -10,11 +10,12 @@ class Colors:
     UNDERLINE = '\033[4m'
     GREY = '\033[90m'
 
-test_file_path = 'tests/test_prompts.jsonl'
+test_root = 'tests'
+test_file = 'test_prompts.jsonl'
 tasks_path = 'configs/swarm_tasks.json'
 
 #Options are 'assistants' or 'local'
-engine = 'local'
+engine_name = 'local'
 
 max_iterations = 5
 

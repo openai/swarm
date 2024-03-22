@@ -13,6 +13,7 @@ class LocalEngine:
     def __init__(self, client, tasks, persist=False):
         self.client = client
         self.assistants = []
+        self.last_assistant = None
         self.tasks = tasks
         self.tool_functions = []
         self.last_assistant = None
@@ -150,7 +151,6 @@ class LocalEngine:
         planner = assistant.planner
         plan = run.initiate(planner)
         plan_log = {'step': [], 'step_output': []}
-
         if not isinstance(plan, list):
             plan_log['step'].append('response')
             plan_log['step'].append(plan)
@@ -262,6 +262,7 @@ class LocalEngine:
             if task.evaluate:
                 output = assistant.evaluate(self.client,task, plan_log)
                 if output is not None:
+                    success_flag = False
                     if not isinstance(output[0],bool):
                      success_flag = False if output[0].lower() == 'false' else bool(output[0])
                     message = output[1]
@@ -288,17 +289,16 @@ class LocalEngine:
         assistant_pass = 0
         for task in self.tasks:
             original_plan, plan_log = self.run_task(task, test_mode=True)
-            last_response = plan_log['step_output'][-1]
 
             if task.groundtruth:
                 total_groundtruth += 1
                 # Assuming get_completion returns a response object with a content attribute
-                response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(last_response, task.groundtruth)}])
+                response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(original_plan, task.groundtruth)}])
                 if response.content.lower() == 'true':
                     groundtruth_pass += 1
-                    print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{last_response}{Colors.ENDC}")
+                    print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
-                    print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{last_response}{Colors.ENDC}")
+                    print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
 
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
@@ -369,8 +369,6 @@ class LocalEngine:
                 if assistant.name == 'user_interface':
                     assistant.save_conversation()
              #assistant.print_conversation()
-            print("\n\n🍯🐝🍯 Swarm operations complete 🍯🐝🍯\n\n")
-
 
     def load_test_tasks(self, test_file_path):
         self.tasks = []  # Clear any existing tasks
