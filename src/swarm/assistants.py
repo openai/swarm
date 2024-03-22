@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 from typing import Any, Optional
 from src.swarm.conversation import Conversation
-from src.evals.eval_function import EvalFunction
+from configs.prompts import EVALUATE_TASK_PROMPT
 from configs.general import Colors
+from src.utils import get_completion
 import json
 import time
 
@@ -59,9 +60,13 @@ class Assistant(BaseModel):
 
     def evaluate(self, client, task, plan_log):
         '''Evaluates the assistant's performance on a task'''
-        eval_function = EvalFunction(client, task, plan_log)
-        result = eval_function.evaluate()
-        return result
+        output = get_completion(client, [{'role': 'user', 'content': EVALUATE_TASK_PROMPT.format(task.description, plan_log)}])
+        output.content = output.content.replace("'",'"')
+        try:
+            return json.loads(output.content)
+        except json.JSONDecodeError:
+            print("An error occurred while decoding the JSON.")
+            return None
 
     def save_conversation(self,test=False):
         timestamp = time.strftime("%Y%m%d-%H%M%S")
