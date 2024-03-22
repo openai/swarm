@@ -8,7 +8,7 @@ from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
-
+from src.evals.eval_function import EvalFunction
 
 
 class LocalEngine:
@@ -285,9 +285,9 @@ class LocalEngine:
 
             if task.groundtruth:
                 total_groundtruth += 1
-                # Assuming get_completion returns a response object with a content attribute
-                response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(original_plan, task.groundtruth)}])
-                if response.content.lower() == 'true':
+                eval_function = EvalFunction(self.client, plan_log, task)
+                eval_result = eval_function.evaluate()
+                if eval_result:
                     groundtruth_pass += 1
                     print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
@@ -308,7 +308,7 @@ class LocalEngine:
 
                 if response.content.lower() == 'true':
                     planning_pass += 1
-                    print(f"\{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
                     print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
 
@@ -335,14 +335,14 @@ class LocalEngine:
             print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
-    def deploy(self, client, test_mode=False, test_file_path=None):
+    def deploy(self, client, test_mode=False, test_file_paths=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
         self.client = client
-        if test_mode and test_file_path:
+        if test_mode and test_file_paths:
             print("\nTesting the swarm\n\n")
-            self.load_test_tasks(test_file_path)
+            self.load_test_tasks(test_file_paths)
             self.initialize_and_display_assistants()
             self.run_tests()
             for assistant in self.assistants:
@@ -363,16 +363,21 @@ class LocalEngine:
                     assistant.save_conversation()
              #assistant.print_conversation()
 
-    def load_test_tasks(self, test_file_path):
+
+    def load_test_tasks(self, test_file_paths):
         self.tasks = []  # Clear any existing tasks
-        with open(test_file_path, 'r') as file:
-            for line in file:
-                test_case = json.loads(line)
-                task = EvaluationTask(description=test_case['text'],
-                            assistant=test_case.get('assistant', 'user_interface'),
-                            groundtruth=test_case.get('groundtruth',None),
-                            expected_plan=test_case.get('expected_plan',None),
-                            expected_assistant=test_case['expected_assistant'],
-                            iterate=test_case.get('iterate', False),  # Add this
-                            evaluate=test_case.get('evaluate', False))  # And this
-                self.tasks.append(task)
+        for f in test_file_paths:
+            with open(f, 'r') as file:
+                for line in file:
+                    test_case = json.loads(line)
+                    task = EvaluationTask(description=test_case['text'],
+                                assistant=test_case.get('assistant', 'user_interface'),
+                                groundtruth=test_case.get('groundtruth',None),
+                                expected_plan=test_case.get('expected_plan',None),
+                                expected_assistant=test_case['expected_assistant'],
+                                iterate=test_case.get('iterate', False),  # Add this
+                                evaluate=test_case.get('evaluate', False),
+                                eval_function=test_case.get('eval_function', 'default')
+                                ) 
+                    self.tasks.append(task)
+            

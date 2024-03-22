@@ -298,15 +298,15 @@ class AssistantsEngine:
             self.reset_thread()
             return self.run_request(task.description, assistant,test_mode)
 
-    def deploy(self, client,test_mode=False,test_file_path=None):
+    def deploy(self, client,test_mode=False,test_file_paths=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
         #Initialize swarm first
         self.client = client
-        if test_mode and test_file_path:
+        if test_mode and test_file_paths:
             print("\nTesting the swarm\n\n")
-            self.load_test_tasks(test_file_path)
+            self.load_test_tasks(test_file_paths)
         else:
             print("\n🐝🐝🐝 Deploying the swarm 🐝🐝🐝\n\n")
 
@@ -343,13 +343,15 @@ class AssistantsEngine:
 
 
 
-    def load_test_tasks(self, test_file_path):
+    def load_test_tasks(self, test_file_paths):
         self.tasks = []  # Clear any existing tasks
-        with open(test_file_path, 'r') as file:
-            for line in file:
-                test_case = json.loads(line)
-                task = EvaluationTask(description=test_case['text'],
-                            assistant=test_case.get('assistant', 'auto'),
-                            groundtruth=test_case['groundtruth'],
-                            expected_assistant=test_case['expected_assistant'])
-                self.tasks.append(task)
+        for f in test_file_paths:
+            with open(f, 'r') as file:
+                for line in file:
+                    test_case = json.loads(line)
+                    task = EvaluationTask(description=test_case['text'],
+                                assistant=test_case.get('assistant', 'auto'),
+                                groundtruth=test_case['groundtruth'],
+                                expected_assistant=test_case['expected_assistant'],
+                                eval_function=test_case.get('eval_function', 'default'))
+                    self.tasks.append(task)
