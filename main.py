@@ -13,7 +13,7 @@ def main():
     swarm = Swarm(
         engine_name=engine_name)
 
-    if args.test:
+    if args.test is not None:
         test_files = args.test
         if len(test_files) == 0:
             test_file_paths = [f"{test_root}/{test_file}"]
