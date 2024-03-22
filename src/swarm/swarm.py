@@ -17,7 +17,6 @@ class Swarm:
         Processes all tasks in the order they are listed in self.tasks.
         """
         client = OpenAI()
-        print(self.engine)
         #Initialize swarm first
         if self.engine_name == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
@@ -38,7 +37,6 @@ class Swarm:
                             iterate=task_json.get('iterate', False),
                             evaluate=task_json.get('evaluate', False),
                             assistant=task_json.get('assistant', 'user_interface'))
-                print(task.description)
                 self.tasks.append(task)
 
     def add_task(self, task):

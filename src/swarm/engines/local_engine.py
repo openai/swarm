@@ -8,7 +8,7 @@ from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
-
+from src.evals.eval_function import EvalFunction
 
 
 class LocalEngine:
@@ -284,9 +284,9 @@ class LocalEngine:
 
             if task.groundtruth:
                 total_groundtruth += 1
-                # Assuming get_completion returns a response object with a content attribute
-                response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(original_plan, task.groundtruth)}])
-                if response.content.lower() == 'true':
+                eval_function = EvalFunction(self.client, plan_log, task)
+                eval_result = eval_function.evaluate()
+                if eval_result:
                     groundtruth_pass += 1
                     print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
