@@ -108,13 +108,20 @@ E.g.: `"Send an email summarizing George Washington's wikipedia page to Jason Sm
 
 ## Running tests `test_prompts.jsonl`
 
-The framework supports three types of evaluations, stored in test_prompts.jsonl. Evals can be any combination of the following types.
+The framework supports three types of evaluations, evals can be any combination of the following types:
 
-- **Groundtruth evals:** Evaluate response accuracy, applicable for assistants using respond_to_user. The output and groundtruth do not need to be exact string matches.
+- **Groundtruth evals:** Evaluate response accuracy, applicable for assistants using respond_to_user. The output and groundtruth do not need to be exact string matches. You can provide your own groundtruth evaluation function in `src/evals/eval_function.py`
 - **Assistant evals:** Test accuracy of request triage and routing to the appropriate assistant.
 - **Planning evals:** Evaluate sequential planning of assistants with multiple tools.
 
-You can run tests by using the following command (e.g., `python3 main.py --test`). Test logs will be stored in the `test_runs/` subdirectory of `tests/`.
+You can run tests by using the following command: `python3 main.py --test`.
+
+By default, the default test root (`tests`) and the default test file (`test_prompts.jsonl`) are used. 
+You can change these default values in `configs/general.py`, and you can also provide custom test files when running tests: `python3 main.py --test file1.jsonl file2.jsonl`
+
+Note: the path to the test files is relative to `test_root`.
+
+Test logs will be stored in the `test_runs/` subdirectory of `tests/`.
 
 ## Sample configuration
 
@@ -191,12 +198,25 @@ In the `swarm_tasks.json`, we define tasks in a JSON format, with the descriptio
 
 ### Example `test_prompts.jsonl`
 
-In the `tests` folder, we have our test prompts as described [above](#running-tests-test_promptsjsonl).
+You can define test files in the `jsonl` format, providing:
+
+- The text prompt
+- The `groundtruth` value if applicable
+- If a groundtruth value is provided, you can define a custom `eval_function` (that needs to map to a method in `evals/eval_function.py`), otherwise the default evaluation function will be used
+- The `expected_assistant`
+- The `expected_plan` if applicable
+
+As described [above](#running-tests-test_promptsjsonl), by default, the `tests` folder will be used as the root path for test files (this is configurable in `configs/general.py`).
+
+The default test file is `test_prompts.jsonl`, but you can create additional files and specify which files you want to use when using the `--test` parameter.
+
+Example test file:
 
 ```json
 {"text": "What is 5+5?", "groundtruth":"10"}
 {"text": "Explain the DALL-E editor interface?", "expected_assistant": "help_center"}
 {"text": "Explain how to delete my OpenAI key, then email me those instructions to \"me@test.com\"", "expected_plan":[{"tool": "query_docs", "args": {"query": "How to delete OpenAI API key"}},{"tool": "send_email", "args": {"message": "To delete your API key, navigate to the API keys section of the openai.com website, and click \"Revoke key\""},"email_address":"me@test.com"}], "expected_assistant": "help_center"}
+{"text": "How many days in the week?", "expected_assistant": "user_interface", "eval_function": "numeric"}
 ```
 
 ### Example `session`
