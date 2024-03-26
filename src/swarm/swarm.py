@@ -6,7 +6,7 @@ from src.swarm.engines.local_engine import LocalEngine
 from configs.general import Colors, tasks_path
 
 class Swarm:
-    def __init__(self,engine,tasks=[],persist=False):
+    def __init__(self,engine_name,tasks=[],persist=False):
         self.tasks = tasks
         self.tasks = tasks
         self.engine_name = engine_name

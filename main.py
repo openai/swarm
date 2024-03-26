@@ -2,7 +2,7 @@ import shlex
 import argparse
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
-from configs.general import Colors, test_file_path, engine_name, persist
+from configs.general import Colors, test_file, test_root, engine_name, persist
 from src.validator import validate_all_tools, validate_all_assistants
 from src.arg_parser import parse_args
 
@@ -11,10 +11,16 @@ def main():
     args = parse_args()
 
     swarm = Swarm(
-        engine_name=engine_name, persist)
+        engine_name=engine_name, persist=persist)
 
-    if args.test:
-        swarm.deploy(test_mode=True, test_file_path=test_file_path)
+    if args.test is not None:
+        test_files = args.test
+        if len(test_files) == 0:
+            test_file_paths = [f"{test_root}/{test_file}"]
+        else:
+            test_file_paths = [f"{test_root}/{file}" for file in test_files]    
+        swarm = Swarm(engine_name='local')
+        swarm.deploy(test_mode=True, test_file_paths=test_file_paths)
 
     elif args.input:
         # Interactive mode for adding tasks
