@@ -36,7 +36,13 @@ In `configs`, you will find the following:
 
 - `swarm_tasks.json`: Contains the tasks for the Swarm to complete (see example [here](#example-tasks)).
 
-As a default, your Swarm will have a `user_interface` assistant with access to the `respond_to_user` tool.
+- `general.py`: Contains general parameters for your Swarm. Notable parameters are:
+  - `max_iterations`: When a Task has `iterate` parameter set to True, this determines how many times a Swarm can attempt to complete a Task before exiting the loop. Default is 5.
+  - `persist`: This boolean parameter determines if a Swarm session should have a persistent assistant across Tasks. When `persist` is True, if an assistant is selected to complete a Task, the following Task is automatically routed to that same assistant.
+
+- `prompts.py`: Contains all LLM prompts used in Swarm, including the prompts for planners. Planning prompts may need to be customized based on your specific use case for best performance.
+
+As a default, your Swarm will have a `user_interface` assistant with no tools that can only respond with a text completion to Tasks.
 To create additional assistants, add a new folder for each assistant in the `configs/assitants/` directory with the desired assistant name, and outline the specs of the assistant in an `assistant.json` file in that folder (see example [here](#sample-configuration)).
 
 To add new tools, add a new folder with the desired tool name to the `configs/tools` folder with a `handler.py` and `tool.json` file (see example [here](#example-tooljson)).
@@ -116,7 +122,7 @@ The framework supports three types of evaluations, evals can be any combination 
 
 You can run tests by using the following command: `python3 main.py --test`.
 
-By default, the default test root (`tests`) and the default test file (`test_prompts.jsonl`) are used. 
+By default, the default test root (`tests`) and the default test file (`test_prompts.jsonl`) are used.
 You can change these default values in `configs/general.py`, and you can also provide custom test files when running tests: `python3 main.py --test file1.jsonl file2.jsonl`
 
 Note: the path to the test files is relative to `test_root`.

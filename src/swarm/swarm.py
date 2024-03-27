@@ -6,13 +6,14 @@ from src.swarm.engines.local_engine import LocalEngine
 from configs.general import Colors, tasks_path
 
 class Swarm:
-    def __init__(self,engine_name,tasks=[]):
+    def __init__(self,engine_name,tasks=[],persist=False):
         self.tasks = tasks
         self.engine_name = engine_name
         self.engine = None
+        self.persist = persist
 
 
-    def deploy(self, test_mode=False,test_file_paths=None):
+    def deploy(self, test_mode=False,test_file_path=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
@@ -21,12 +22,12 @@ class Swarm:
         if self.engine_name == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
             self.engine = AssistantsEngine(client,self.tasks)
-            self.engine.deploy(client,test_mode,test_file_paths)
+            self.engine.deploy(client,test_mode,test_file_path)
 
         elif self.engine_name =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
-            self.engine = LocalEngine(client,self.tasks)
-            self.engine.deploy(client,test_mode,test_file_paths)
+            self.engine = LocalEngine(client,self.tasks,persist=self.persist)
+            self.engine.deploy(client,test_mode,test_file_path)
 
     def load_tasks(self):
         self.tasks = []
@@ -38,6 +39,7 @@ class Swarm:
                             evaluate=task_json.get('evaluate', False),
                             assistant=task_json.get('assistant', 'user_interface'))
                 self.tasks.append(task)
+
 
     def add_task(self, task):
         self.tasks.append(task)

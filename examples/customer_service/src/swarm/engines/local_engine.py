@@ -12,10 +12,11 @@ from src.runs.run import Run
 
 
 class LocalEngine:
-    def __init__(self, client, tasks):
+    def __init__(self, client, tasks,persist=False):
         self.client = client
         self.assistants = []
         self.last_assistant = None
+        self.persist = persist
         self.tasks = tasks
         self.tool_functions = []
 
@@ -235,11 +236,15 @@ class LocalEngine:
                 print(
             f"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
                 )
-            #starting assistant, default is user_interface
-            assistant = self.get_assistant(task.assistant)
-            assistant.current_task_id = task.id
-            assistant.add_user_message(task.description
-                                       )
+
+            #Maintain assistant if persist flag is true
+            if self.persist and self.last_assistant is not None:
+                assistant = self.last_assistant
+            else:
+                assistant = self.get_assistant(task.assistant)
+                assistant.current_task_id = task.id
+                assistant.add_user_message(task.description
+                                        )
             #triage based on current assistant
             selected_assistant = self.triage_request(assistant, task.description)
             if test_mode:
@@ -251,6 +256,9 @@ class LocalEngine:
 
             # Run the request with the determined or specified assistant
             original_plan, plan_log = self.initiate_run(task, selected_assistant,test_mode)
+
+            #set last assistant
+            self.last_assistant = selected_assistant
             #if evaluating the task
             if task.evaluate:
                 output = assistant.evaluate(self.client,task, plan_log)

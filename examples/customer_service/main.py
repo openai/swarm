@@ -2,7 +2,7 @@ import shlex
 import argparse
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
-from configs.general import Colors, test_file_path, engine_name
+from configs.general import Colors, test_file_path, engine_name, persist
 from src.validator import validate_all_tools, validate_all_assistants
 from src.arg_parser import parse_args
 
@@ -11,7 +11,7 @@ def main():
     args = parse_args()
 
     swarm = Swarm(
-        engine_name=engine_name)
+        engine_name=engine_name, persist=persist)
 
     if args.test:
         swarm.deploy(test_mode=True, test_file_path=test_file_path)
