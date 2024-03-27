@@ -8,6 +8,7 @@ from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
+from src.swarm.context import Context
 
 
 
@@ -18,6 +19,7 @@ class LocalEngine:
         self.last_assistant = None
         self.tasks = tasks
         self.tool_functions = []
+        self.context = Context()
 
     def load_tools(self):
         tools_path = 'configs/tools'
