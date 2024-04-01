@@ -371,21 +371,21 @@ class LocalEngine:
              #assistant.print_conversation()
 
     def load_test_tasks(self, test_file_paths):
-            self.tasks = []  # Clear any existing tasks
-            for f in test_file_paths:
-                with open(f, 'r') as file:
-                    for line in file:
-                        test_case = json.loads(line)
-                        task = EvaluationTask(description=test_case['text'],
-                                    assistant=test_case.get('assistant', 'user_interface'),
-                                    groundtruth=test_case.get('groundtruth',None),
-                                    expected_plan=test_case.get('expected_plan',None),
-                                    expected_assistant=test_case['expected_assistant'],
-                                    iterate=test_case.get('iterate', False),  # Add this
-                                    evaluate=test_case.get('evaluate', False),
-                                    eval_function=test_case.get('eval_function', 'default')
-                                    )
-                        self.tasks.append(task)
+        self.tasks = []  # Clear any existing tasks
+        for f in test_file_paths:
+            with open(f, 'r') as file:
+                for line in file:
+                    test_case = json.loads(line)
+                    task = EvaluationTask(description=test_case['text'],
+                                assistant=test_case.get('assistant', 'user_interface'),
+                                groundtruth=test_case.get('groundtruth',None),
+                                expected_plan=test_case.get('expected_plan',None),
+                                expected_assistant=test_case['expected_assistant'],
+                                iterate=test_case.get('iterate', False),  # Add this
+                                evaluate=test_case.get('evaluate', False),
+                                eval_function=test_case.get('eval_function', 'default')
+                                )
+                    self.tasks.append(task)
 
     def store_context_globally(self, assistant):
         self.global_context['history'].append({assistant.name:assistant.context['history']})

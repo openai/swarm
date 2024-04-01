@@ -9,6 +9,11 @@ from src.arg_parser import parse_args
 
 def main():
     args = parse_args()
+    try:
+        validate_all_tools(engine_name)
+        validate_all_assistants()
+    except:
+        raise Exception("Validation failed")
 
     swarm = Swarm(
         engine_name=engine_name)

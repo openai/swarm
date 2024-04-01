@@ -8,8 +8,8 @@ import time
 
 
 class Assistant(BaseModel):
-    name: str
     log_flag: bool
+    name: Optional[str] = None
     instance: Optional[Any] = None
     tools: Optional[list] = None
     current_task_id: str = None
