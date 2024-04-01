@@ -18,7 +18,7 @@ def main():
         if len(test_files) == 0:
             test_file_paths = [f"{test_root}/{test_file}"]
         else:
-            test_file_paths = [f"{test_root}/{file}" for file in test_files]    
+            test_file_paths = [f"{test_root}/{file}" for file in test_files]
         swarm = Swarm(engine_name='local')
         swarm.deploy(test_mode=True, test_file_paths=test_file_paths)
 
@@ -34,7 +34,7 @@ def main():
 
             # Use shlex to parse the task description and arguments
             task_args = shlex.split(task_input)
-            task_parser = argparse.ArgumentParser() 
+            task_parser = argparse.ArgumentParser()
             task_parser.add_argument("description", type=str, nargs='?', default="")
             task_parser.add_argument("--iterate", action="store_true", help="Set the iterate flag for the new task.")
             task_parser.add_argument("--evaluate", action="store_true", help="Set the evaluate flag for the new task.")
