@@ -18,6 +18,7 @@ class LocalEngine:
         self.last_assistant = None
         self.tasks = tasks
         self.tool_functions = []
+        self.global_context = {}
 
     def load_tools(self):
         tools_path = 'configs/tools'
@@ -69,12 +70,13 @@ class LocalEngine:
             Loads all assistants and displays their information.
             """
             self.load_all_assistants()
+            self.initialize_global_history()
 
             for asst in self.assistants:
                 print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
                 print(f'{Colors.OKBLUE}Assistant name:{Colors.ENDC} {Colors.BOLD}{asst.name}{Colors.ENDC}')
                 if asst.tools:
-                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.function.name for tool in asst.tools]} \n')
+                    print(f'{{Colors.OKGREEN}}Tools:{{Colors.ENDC}} {[tool.function.name for tool in asst.tools]} \n')
                 else:
                     print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
 
@@ -147,6 +149,7 @@ class LocalEngine:
         assistant.current_task_id = task.id
         assistant.runs.append(run)
 
+
         #Get planner
         planner = assistant.planner
         plan = run.initiate(planner)
@@ -157,6 +160,8 @@ class LocalEngine:
             assistant.add_assistant_message(f"Response to user: {plan}")
             print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
 
+            #add global context
+            self.store_context_globally(assistant)
             return plan_log, plan_log
 
         original_plan = plan.copy()
@@ -192,6 +197,8 @@ class LocalEngine:
                new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
                plan = run.generate_plan(new_task)
             # Store the output for the next iteration
+
+            self.store_context_globally(assistant)
 
         return original_plan, plan_log
 
@@ -308,7 +315,7 @@ class LocalEngine:
 
                 if response.content.lower() == 'true':
                     planning_pass += 1
-                    print(f"\{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
                     print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
 
@@ -376,3 +383,13 @@ class LocalEngine:
                             iterate=test_case.get('iterate', False),  # Add this
                             evaluate=test_case.get('evaluate', False))  # And this
                 self.tasks.append(task)
+
+    def store_context_globally(self, assistant):
+        self.global_context['history'].append({assistant.name:assistant.context['history']})
+    def initialize_global_history(self):
+        self.global_context['history'] = []
+
+
+
+
+
