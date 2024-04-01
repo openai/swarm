@@ -8,7 +8,6 @@ from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
-from src.swarm.context import Context
 
 
 
@@ -19,7 +18,6 @@ class LocalEngine:
         self.last_assistant = None
         self.tasks = tasks
         self.tool_functions = []
-        self.context = Context()
 
     def load_tools(self):
         tools_path = 'configs/tools'
@@ -60,7 +58,7 @@ class LocalEngine:
                         planner = assistant_config.get('planner', 'sequential') #default is sequential
                         print(f"Assistant '{assistant_name}' created.\n")
                         asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=None, tools=assistant_tools, sub_assistants=sub_assistants, planner=planner)
-                        asst_object.initialize_conversation()
+                        asst_object.initialize_history()
                         self.assistants.append(asst_object)
                 except (IOError, json.JSONDecodeError) as e:
                     print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
