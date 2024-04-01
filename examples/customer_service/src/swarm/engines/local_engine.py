@@ -18,6 +18,7 @@ class LocalEngine:
         self.last_assistant = None
         self.tasks = tasks
         self.tool_functions = []
+        self.global_context = {}
 
     def load_tools(self):
         tools_path = 'configs/tools'
@@ -58,7 +59,7 @@ class LocalEngine:
                         planner = assistant_config.get('planner', 'sequential') #default is sequential
                         print(f"Assistant '{assistant_name}' created.\n")
                         asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=None, tools=assistant_tools, sub_assistants=sub_assistants, planner=planner)
-                        asst_object.initialize_conversation()
+                        asst_object.initialize_history()
                         self.assistants.append(asst_object)
                 except (IOError, json.JSONDecodeError) as e:
                     print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
@@ -69,6 +70,7 @@ class LocalEngine:
             Loads all assistants and displays their information.
             """
             self.load_all_assistants()
+            self.initialize_global_history()
 
             for asst in self.assistants:
                 print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
@@ -147,6 +149,7 @@ class LocalEngine:
         assistant.current_task_id = task.id
         assistant.runs.append(run)
 
+
         #Get planner
         planner = assistant.planner
         plan = run.initiate(planner)
@@ -157,6 +160,8 @@ class LocalEngine:
             assistant.add_assistant_message(f"Response to user: {plan}")
             print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
 
+            #add global context
+            self.store_context_globally(assistant)
             return plan_log, plan_log
 
         original_plan = plan.copy()
@@ -192,6 +197,8 @@ class LocalEngine:
                new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
                plan = run.generate_plan(new_task)
             # Store the output for the next iteration
+
+            self.store_context_globally(assistant)
 
         return original_plan, plan_log
 
@@ -308,7 +315,7 @@ class LocalEngine:
 
                 if response.content.lower() == 'true':
                     planning_pass += 1
-                    print(f"\{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
                     print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
 
@@ -363,16 +370,25 @@ class LocalEngine:
                     assistant.save_conversation()
              #assistant.print_conversation()
 
-    def load_test_tasks(self, test_file_path):
-        self.tasks = []  # Clear any existing tasks
-        with open(test_file_path, 'r') as file:
-            for line in file:
-                test_case = json.loads(line)
-                task = EvaluationTask(description=test_case['text'],
-                            assistant=test_case.get('assistant', 'user_interface'),
-                            groundtruth=test_case.get('groundtruth',None),
-                            expected_plan=test_case.get('expected_plan',None),
-                            expected_assistant=test_case['expected_assistant'],
-                            iterate=test_case.get('iterate', False),  # Add this
-                            evaluate=test_case.get('evaluate', False))  # And this
-                self.tasks.append(task)
+    def load_test_tasks(self, test_file_paths):
+            self.tasks = []  # Clear any existing tasks
+            for f in test_file_paths:
+                with open(f, 'r') as file:
+                    for line in file:
+                        test_case = json.loads(line)
+                        task = EvaluationTask(description=test_case['text'],
+                                    assistant=test_case.get('assistant', 'user_interface'),
+                                    groundtruth=test_case.get('groundtruth',None),
+                                    expected_plan=test_case.get('expected_plan',None),
+                                    expected_assistant=test_case['expected_assistant'],
+                                    iterate=test_case.get('iterate', False),  # Add this
+                                    evaluate=test_case.get('evaluate', False),
+                                    eval_function=test_case.get('eval_function', 'default')
+                                    )
+                        self.tasks.append(task)
+
+    def store_context_globally(self, assistant):
+        self.global_context['history'].append({assistant.name:assistant.context['history']})
+
+    def initialize_global_history(self):
+        self.global_context['history'] = []
