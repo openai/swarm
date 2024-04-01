@@ -110,7 +110,7 @@ E.g.: `"Send an email summarizing George Washington's wikipedia page to Jason Sm
 
 The framework supports three types of evaluations, evals can be any combination of the following types:
 
-- **Groundtruth evals:** Evaluate response accuracy, applicable for assistants using respond_to_user. The output and groundtruth do not need to be exact string matches. You can provide your own groundtruth evaluation function in `src/evals/eval_function.py`
+- **Groundtruth evals:** Evaluate response accuracy, applicable for assistants using respond_to_user. The output and groundtruth do not need to be exsact string matches. You can provide your own groundtruth evaluation function in `src/evals/eval_function.py`
 - **Assistant evals:** Test accuracy of request triage and routing to the appropriate assistant.
 - **Planning evals:** Evaluate sequential planning of assistants with multiple tools.
 
