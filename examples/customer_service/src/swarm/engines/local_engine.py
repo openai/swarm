@@ -76,7 +76,7 @@ class LocalEngine:
                 print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
                 print(f'{Colors.OKBLUE}Assistant name:{Colors.ENDC} {Colors.BOLD}{asst.name}{Colors.ENDC}')
                 if asst.tools:
-                    print(f'{{Colors.OKGREEN}}Tools:{{Colors.ENDC}} {[tool.function.name for tool in asst.tools]} \n')
+                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.function.name for tool in asst.tools]} \n')
                 else:
                     print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
 
@@ -389,8 +389,3 @@ class LocalEngine:
 
     def initialize_global_history(self):
         self.global_context['history'] = []
-
-
-
-
-
