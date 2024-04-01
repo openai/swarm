@@ -378,6 +378,6 @@ class LocalEngine:
                                 iterate=test_case.get('iterate', False),  # Add this
                                 evaluate=test_case.get('evaluate', False),
                                 eval_function=test_case.get('eval_function', 'default')
-                                ) 
+                                )
                     self.tasks.append(task)
-            
+

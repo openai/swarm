@@ -36,11 +36,10 @@ def validate_all_tools(engine):
                     spec.loader.exec_module(tool_module)
 
                     # Verify if the function exists in handler.py and matches the name
-                    expected_function_name = f"{tool_dir}_{engine}"
-                    if hasattr(tool_module, expected_function_name):
+                    if hasattr(tool_module, tool_dir):
                         print(f"{tool_dir}/handler.py contains a matching function name.")
                     else:
-                        print(f"{tool_dir}/handler.py does not contain a function '{expected_function_name}'.")
+                        print(f"{tool_dir}/handler.py does not contain a function '{tool_dir}'.")
 
             else:
                 if not os.path.isfile(tool_json_path):
@@ -51,13 +50,17 @@ def validate_all_tools(engine):
 
     # Function to validate all assistants
 def validate_all_assistants():
-    assistants_path = os.path.join(os.getcwd(), 'configs/assistants')  # Path to the assistants directory
-    for filename in os.listdir(assistants_path):
-        if filename.endswith('assistant.json'):
-            file_path = os.path.join(assistants_path, filename)
-            with open(file_path, 'r') as file:
-                assistant_data = json.load(file)
-                Assistant(**assistant_data)  # Validate each assistant, uncomment if you have a schema
-                print(f"{filename} assistant validated!")
-
+    assistants_path = os.path.join(os.getcwd(), 'configs/assistants')
+    for root, dirs, files in os.walk(assistants_path):
+        for file in files:
+            if file.endswith('assistant.json'):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r') as file:
+                        assistant_data = json.load(file)[0]  # Access the first dictionary in the list
+                        try:
+                            Assistant(**assistant_data)
+                            print(f"{os.path.basename(root)} assistant validated!")
+                        except:
+                            Assistant(**assistant_data)
+                            print(f"Assistant validation failed!")
     print('\n')
