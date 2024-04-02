@@ -1,0 +1,8 @@
+{
+  "test_root": "tests",
+  "test_file": "test_prompts.jsonl",
+  "tasks_path": "configs/tasks/swarm_tasks.json",
+  "engine": "local",
+  "max_iterations": 5,
+  "persist": false
+}

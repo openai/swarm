@@ -1,0 +1,233 @@
+[
+    {
+        "name": "query_kb",
+        "description": "Get information from the knowledge base about general company information.",
+        "parameters": {
+            "query": {
+                "type": "string",
+                "description": "What the user wants to know"
+            }
+        },
+        "required": [
+            "query"
+        ]
+    },
+    {
+        "name": "query_faq",
+        "description": "Get information from the FAQ about the following topics: orders lifecycle (delivery times, canceling window, payment, terms & conditions); account management (password reset, account creation, account deletion).",
+        "parameters": {
+            "query": {
+                "type": "string",
+                "description": "What the user wants to know"
+            }
+        },
+        "required": [
+            "query"
+        ]
+    },
+    {
+        "name": "submit_ticket",
+        "description": "Submit ticket if the user query was not resolved.",
+        "parameters": {
+            "category": {
+                "type": "string",
+                "description": "Category of the ticket. One of 'question', 'issue', 'request'"
+            },
+            "summary": {
+                "type": "string",
+                "description": "One line summary (title) for the ticket."
+            },
+            "description": {
+                "type": "string",
+                "description": "Detailed description of the user query"
+            }
+        },
+        "required": [
+            "category",
+            "summary",
+            "description"
+        ]
+    },
+    {
+        "name": "find_customer_details",
+        "description": "Find a user account based on an email and a birthday.",
+        "parameters": {
+            "email": {
+                "type": "string",
+                "description": "email of the user"
+            },
+            "birthday": {
+                "type": "string",
+                "description": "Birthday (format: MM-DD) of the user"
+            }
+        },
+        "required": [
+            "email",
+            "birthday"
+        ]
+    },
+    {
+        "name": "cancel_order",
+        "description": "Cancel a given order.",
+        "parameters": {
+            "orderId": {
+                "type": "string",
+                "description": "ID of the order to cancel"
+            },
+            "reason": {
+                "type": "string",
+                "description": "Cancel reason if provided, optional"
+            }
+        },
+        "required": [
+            "orderId"
+        ],
+        "human_input": true
+    },
+    {
+        "name": "refund_order",
+        "description": "Refund a given order.",
+        "parameters": {
+            "orderId": {
+                "type": "string",
+                "description": "ID of the order to cancel"
+            },
+            "reason": {
+                "type": "string",
+                "description": "Refund reason if provided, optional"
+            },
+            "amount": {
+                "type": "number",
+                "description": "Amount to refund"
+            }
+        },
+        "required": [
+            "orderId",
+            "amount"
+        ],
+        "human_input": true
+    },
+    {
+        "name": "return_order",
+        "description": "Return a given order.",
+        "parameters": {
+            "orderId": {
+                "type": "string",
+                "description": "ID of the order to cancel"
+            },
+            "reason": {
+                "type": "string",
+                "description": "Return reason if provided, optional"
+            }
+        },
+        "required": [
+            "orderId"
+        ],
+        "human_input": true
+    },
+    {
+        "name": "check_delivery_status",
+        "description": "Check the delivery status of a given order.",
+        "parameters": {
+            "orderId": {
+                "type": "string",
+                "description": "ID of the order for which to check the delivery status"
+            }
+        },
+        "required": [
+            "orderId"
+        ]
+    },
+    {
+        "name": "find_order",
+        "description": "Check order details based on an accountId and at least 1 additional information",
+        "parameters": {
+            "accountId": {
+                "type": "string",
+                "description": "ID of the account associated with the order"
+            },
+            "orderDate": {
+                "type": "string",
+                "description": "Date of the order"
+            },
+            "orderNumber": {
+                "type": "string",
+                "description": "Number of the order"
+            },
+            "lastOrder": {
+                "type": "boolean",
+                "description": "If true, return the last order of the account"
+            }
+        },
+        "required": [
+            "accountId"
+        ]
+    },
+    {
+        "name": "fetch_user_history",
+        "description": "Fetch the user's conversation with support history, to be used for each new conversation to understand the context.",
+        "parameters": {
+            "accountId": {
+                "type": "string",
+                "description": "ID of the user account"
+            }
+        },
+        "required": [
+            "accountId"
+        ]
+    },
+    {
+        "name": "check_policy",
+        "description": "Check the policy related to a given topic",
+        "parameters": {
+            "topic": {
+                "type": "string",
+                "description": "Topic to check the policy for, inferred from the conversation with the user."
+            }
+        },
+        "required": [
+            "topic"
+        ]
+    },
+    {
+        "name": "log_feedback",
+        "description": "Tool to log a formal feedback request if the user has expressed the intent to do so.",
+        "parameters": {
+            "accountId": {
+                "type": "string",
+                "description": "ID of the account of the user who wants to log feedback"
+            },
+            "summary": {
+                "type": "string",
+                "description": "One line summary (title) for the feedback item."
+            },
+            "description": {
+                "type": "string",
+                "description": "Detailed description of the user feedback"
+            }
+        },
+        "required": [
+            "accountId",
+            "summary",
+            "description"
+        ]
+    },
+    {
+        "name": "open_dispute",
+        "description": "Tool to open a dispute after it is clear that the user disagrees with the actions taken.",
+        "parameters": {
+            "accountId": {
+                "type": "string",
+                "description": "ID of the account of the user who wants to log feedback"
+            },
+            "description": {
+                "type": "string",
+                "description": "Detailed description of the dispute"
+            }
+        },
+        "required": [
+            "accountId",
+            "description"
+        ]
+    }
+]

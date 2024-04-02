@@ -1,0 +1,24 @@
+{
+  "type": "function",
+  "function": {
+    "name": "send_email",
+    "description": "Tool to send an email to any email address.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Message content in the email. Make sure to use double quotes for any special characters."
+        },
+        "email_address": {
+          "type": "string",
+          "description": "Email address to send email to. Example: 'me@gmail.com'"
+        }
+      },
+      "required": [
+        "email_address", "message"
+      ]
+    }
+  },
+  "human_input":true
+}
