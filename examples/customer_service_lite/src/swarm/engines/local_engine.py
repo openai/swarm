@@ -12,10 +12,11 @@ from src.runs.run import Run
 
 
 class LocalEngine:
-    def __init__(self, client, tasks):
+    def __init__(self, client, tasks, persist=False):
         self.client = client
         self.assistants = []
         self.last_assistant = None
+        self.persist = persist
         self.tasks = tasks
         self.tool_functions = []
         self.global_context = {}
@@ -242,11 +243,14 @@ class LocalEngine:
                 print(
             f"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
                 )
-            #starting assistant, default is user_interface
-            assistant = self.get_assistant(task.assistant)
-            assistant.current_task_id = task.id
-            assistant.add_user_message(task.description
-                                       )
+            #Maintain assistant if persist flag is true
+            if self.persist and self.last_assistant is not None:
+                assistant = self.last_assistant
+            else:
+                assistant = self.get_assistant(task.assistant)
+                assistant.current_task_id = task.id
+                assistant.add_user_message(task.description)
+
             #triage based on current assistant
             selected_assistant = self.triage_request(assistant, task.description)
             if test_mode:
@@ -258,6 +262,10 @@ class LocalEngine:
 
             # Run the request with the determined or specified assistant
             original_plan, plan_log = self.initiate_run(task, selected_assistant,test_mode)
+
+            #set last assistant
+            self.last_assistant = selected_assistant
+
             #if evaluating the task
             if task.evaluate:
                 output = assistant.evaluate(self.client,task, plan_log)
@@ -371,21 +379,21 @@ class LocalEngine:
              #assistant.print_conversation()
 
     def load_test_tasks(self, test_file_paths):
-            self.tasks = []  # Clear any existing tasks
-            for f in test_file_paths:
-                with open(f, 'r') as file:
-                    for line in file:
-                        test_case = json.loads(line)
-                        task = EvaluationTask(description=test_case['text'],
-                                    assistant=test_case.get('assistant', 'user_interface'),
-                                    groundtruth=test_case.get('groundtruth',None),
-                                    expected_plan=test_case.get('expected_plan',None),
-                                    expected_assistant=test_case['expected_assistant'],
-                                    iterate=test_case.get('iterate', False),  # Add this
-                                    evaluate=test_case.get('evaluate', False),
-                                    eval_function=test_case.get('eval_function', 'default')
-                                    )
-                        self.tasks.append(task)
+        self.tasks = []  # Clear any existing tasks
+        for f in test_file_paths:
+            with open(f, 'r') as file:
+                for line in file:
+                    test_case = json.loads(line)
+                    task = EvaluationTask(description=test_case['text'],
+                                assistant=test_case.get('assistant', 'user_interface'),
+                                groundtruth=test_case.get('groundtruth',None),
+                                expected_plan=test_case.get('expected_plan',None),
+                                expected_assistant=test_case['expected_assistant'],
+                                iterate=test_case.get('iterate', False),  # Add this
+                                evaluate=test_case.get('evaluate', False),
+                                eval_function=test_case.get('eval_function', 'default')
+                                )
+                    self.tasks.append(task)
 
     def store_context_globally(self, assistant):
         self.global_context['history'].append({assistant.name:assistant.context['history']})

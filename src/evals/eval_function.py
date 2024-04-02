@@ -19,7 +19,7 @@ class EvalFunction:
     if response.content.lower() == 'true':
         return True
     return False
-    
+
   def numeric(self):
     number_pattern = r'\d+'
     response = self.plan['step'][-1]
@@ -63,6 +63,6 @@ class EvalFunction:
     except:
        print(f"Issue with extracted names: {name_extract}")
     return False
-  
+
   def evaluate(self):
     return self.eval_function()
