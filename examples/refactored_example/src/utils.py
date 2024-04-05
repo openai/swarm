@@ -18,7 +18,7 @@ def get_completion(client,
     messages: list[dict[str, str]],
     model: str = "gpt-4-0125-preview",
     max_tokens=2000,
-    temperature=0.7,
+    temperature=0,
     tools=None):
 
     # Prepare the request parameters
@@ -48,6 +48,6 @@ def parse_text(text, mode='txt'):
             if mode == 'json':
                 return json.load(f)
             else:
-                f.read()
+                return f.read()
     return text
         

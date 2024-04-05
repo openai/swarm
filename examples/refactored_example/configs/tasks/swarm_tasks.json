@@ -3,11 +3,11 @@
     "description": "What is the square root of 16?"
   },
   {
-    "description": "Is phone verification required for new OpenAI account creation or ChatGPT usage",
+    "description": "What is your cancelation policy?",
     "evaluate": true
   },
   {
-    "description": "How many free tokens do I get when I sign up for an OpenAI account? Send an email to me@gmail.com containing that answer",
+    "description": "Can you help me cancel my order please?",
     "iterate": true,
     "evaluate": true
   }

@@ -35,6 +35,7 @@ class LocalEngine:
         self.max_iterations = settings['max_iterations']
         self.prompts = {}
         self.root_assistant = {}
+        self.model = ''
 
     def get_tool(self, tool_name):
         for t in self.tool_functions:
@@ -107,7 +108,7 @@ class LocalEngine:
         """
         Update the visible assistants based on the current assistant.
         """
-        visible_assistants = []
+        visible_assistants = [current_assistant]
         visible_assistants_names = []
         if current_assistant.name != 'root':
             parent_assistant = self.get_assistant(current_assistant)
@@ -115,11 +116,14 @@ class LocalEngine:
                 visible_assistants_names = parent_assistant['sub_assistants']
             
         for assistant in self.assistants:
-            if current_assistant.name == 'root' and 'root_assistant' in assistant and (assistant['root_assistant'] == True or assistant['root_assistant'] == 'true'):
-                visible_assistants.append(assistant)
+            if current_assistant.name == 'root':
+                if assistant.root_assistant:
+                    visible_assistants.append(assistant)
             else:
                 if assistant.name in visible_assistants_names:
                     visible_assistants.append(assistant)
+        if len(visible_assistants) == 0:
+            print(f"{Colors.WARNING}No visible assistants found.{Colors.ENDC}")
         self.visible_assistants = visible_assistants
 
     def load_prompts(self, swarm):
@@ -135,6 +139,7 @@ class LocalEngine:
             """
             Loads all assistants and displays their information.
             """
+            self.model = swarm['interface_model']
             self.load_all_assistants(swarm)
             self.update_visible_assistants(self.root_assistant)
             self.initialize_global_history()
@@ -143,17 +148,16 @@ class LocalEngine:
                 print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
                 print(f'{Colors.OKBLUE}Assistant name:{Colors.ENDC} {Colors.BOLD}{asst.name}{Colors.ENDC}')
                 if asst.tools:
-                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.name if 'name' in tool else 'tool not found' for tool in asst.tools]} \n')
+                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.name if tool else 'tool not found' for tool in asst.tools]} \n')
                 else:
                     print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
 
 
-    def get_assistant(self, assistant_name):
+    def get_assistant(self, triage):
 
         for assistant in self.assistants:
-            if assistant.name == assistant_name:
+            if assistant.name in triage:
                 return assistant
-        print('No assistant found')
 
         return self.root_assistant
 
@@ -163,17 +167,17 @@ class LocalEngine:
         """
      
         triage_message = [{"role": "system", "content": self.prompts['triage']}]
-        assistants = [{'name': assistant['name'], 'instructions': assistant['system_prompt'], 'tools': assistant['tools']} for assistant in self.visible_assistants]
+        assistants = [{'name': assistant.name, 'instructions': assistant.system_prompt, 'tools': assistant.tools} for assistant in self.visible_assistants]
         triage_message.append(
             {
                 "role": "user",
                 "content": f"USER PROMPT: {message}\n\nAvailable assistants: {assistants}"
             }
         )
-        triage_response = get_completion(self.client, triage_message).content
+        triage_response = get_completion(self.client, triage_message, self.model).content
         print(f"Triage response: {triage_response}")
         assistant = self.get_assistant(triage_response)
-        print(f"Selected assistant: {assistant}")
+        print(f"Selected assistant: {assistant.display_name}")
         return assistant
 
     def initiate_run(self, task, assistant,test_mode):

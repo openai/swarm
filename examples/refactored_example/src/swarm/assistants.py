@@ -16,6 +16,7 @@ class Assistant(BaseModel):
     tools: Optional[list] = None
     current_task_id: str = None
     sub_assistants: Optional[list] = None
+    root_assistant: Optional[bool] = False
     runs: list = []
     context: Optional[dict] = {}
     planner: str = 'sequential' #default to sequential
