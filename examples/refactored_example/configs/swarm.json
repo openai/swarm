@@ -4,7 +4,7 @@
   "default_planner": "sequential",
   "default_log_flag": true,
   "assistants": ["file:assistants/assistants.json"],
-  "tools": ["file:tools.json"],
+  "tools": ["file:tools.json", "file:tools_orders.json"],
   "prompts": {
     "triage": "file:prompts/triage_prompt.txt",
     "planner": "file:prompts/local_planner_prompt.txt",

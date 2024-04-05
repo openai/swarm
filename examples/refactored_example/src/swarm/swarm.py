@@ -3,10 +3,10 @@ from openai import OpenAI
 from src.tasks.task import Task,EvaluationTask
 from src.swarm.engines.assistants_engine import AssistantsEngine
 from src.swarm.engines.local_engine import LocalEngine
-from configs.general import Colors, tasks_path
+from src.utils import Colors
 
 class Swarm:
-    def __init__(self,swarm, settings, engine_name,tasks=[], persist=False):
+    def __init__(self,swarm, settings, engine_name, tasks=[], persist=False):
         self.swarm = swarm
         self.settings = settings
         self.tasks = tasks
@@ -15,7 +15,7 @@ class Swarm:
         self.persist = persist
 
 
-    def deploy(self, test_mode=False,test_file_paths=None):
+    def deploy(self, test_mode=False, test_file_paths=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
@@ -28,10 +28,10 @@ class Swarm:
 
         elif self.engine_name =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
-            self.engine = LocalEngine(client,self.tasks, self.settings, persist=self.persist)
-            self.engine.deploy(client,self.swarm,test_mode,test_file_paths)
+            self.engine = LocalEngine(client, self.tasks, self.settings, persist=self.persist)
+            self.engine.deploy(client, self.swarm, test_mode, test_file_paths)
 
-    def load_tasks(self):
+    def load_tasks(self, tasks_path):
         self.tasks = []
         with open(tasks_path, 'r') as file:
             tasks_data = json.load(file)

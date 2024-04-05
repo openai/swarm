@@ -4,10 +4,11 @@
         "name": "info",
         "model": "gpt-3.5-turbo",
         "system_prompt": "file:assistants/information_instructions.txt",
-        "sub_agents": [
+        "sub_assistants": [
             "help_center",
             "orders"
-        ]
+        ],
+        "root_assistant": true
     },
     {
         "display_name": "Problems handler",
@@ -16,10 +17,11 @@
         "tools": [
             "fetch_user_history"
         ],
-        "sub_agents": [
+        "sub_assistants": [
             "policy_check",
             "feedback"
-        ]
+        ],
+        "root_assistant": true
     },
     {
         "display_name": "Help center agent",
@@ -52,7 +54,7 @@
         "tools": [
             "check_policy"
         ],
-        "sub_agents": [
+        "sub_assistants": [
             "dispute_resolution"
         ]
     },
@@ -63,7 +65,7 @@
         "tools": [
             "log_feedback"
         ],
-        "sub_agents": [
+        "sub_assistants": [
             "dispute_resolution"
         ]
     },

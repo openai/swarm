@@ -7,7 +7,8 @@
             "query_kb",
             "query_faq",
             "submit_ticket"
-        ]
+        ],
+        "root_assistant": true
     },
     {
         "display_name": "Orders assistant",
@@ -21,6 +22,7 @@
             "cancel_order",
             "refund_order",
             "return_order"
-        ]
+        ],
+        "root_assistant": true
     }
 ]

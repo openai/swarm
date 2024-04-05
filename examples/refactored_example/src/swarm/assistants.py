@@ -1,14 +1,16 @@
 from pydantic import BaseModel
 from typing import Any, Optional
 from configs.prompts import EVALUATE_TASK_PROMPT
-from configs.general import Colors
-from src.utils import get_completion
+from src.utils import get_completion, Colors
 import json
 import time
 
 
 class Assistant(BaseModel):
-    log_flag: bool
+    log_flag: Optional[bool] = True
+    model: str = ''
+    system_prompt: str = ''
+    display_name: Optional[str] = ''
     name: Optional[str] = None
     instance: Optional[Any] = None
     tools: Optional[list] = None

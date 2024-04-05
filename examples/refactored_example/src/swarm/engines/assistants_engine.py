@@ -1,7 +1,6 @@
 import json
 import os
-from src.utils import get_completion
-from configs.general import Colors
+from src.utils import get_completion, Colors
 from configs.prompts import TRIAGE_SYSTEM_PROMPT, TRIAGE_MESSAGE_PROMPT, EVALUATE_TASK_PROMPT
 import time
 from src.swarm.assistants import Assistant

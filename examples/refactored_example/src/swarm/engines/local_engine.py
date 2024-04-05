@@ -1,12 +1,13 @@
 import importlib
 import json
 import os
-from configs.prompts import TRIAGE_MESSAGE_PROMPT, TRIAGE_SYSTEM_PROMPT, EVAL_GROUNDTRUTH_PROMPT, EVAL_PLANNING_PROMPT, ITERATE_PROMPT
-from src.utils import get_completion, is_dict_empty, COLORS
+from src.utils import get_completion, is_dict_empty, Colors, parse_text
 from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
+
+DEFAULT_SYSTEM_PROMPT = 'You are a helpful assistant.'
 
 def filter_tools(tools, assistants):
     """
@@ -24,6 +25,7 @@ def filter_tools(tools, assistants):
 class LocalEngine:
     def __init__(self, client, tasks, settings, persist=False):
         self.client = client
+        self.visible_assistants = []
         self.assistants = []
         self.last_assistant = None
         self.persist = persist
@@ -31,7 +33,34 @@ class LocalEngine:
         self.tool_functions = []
         self.global_context = {}
         self.max_iterations = settings['max_iterations']
+        self.prompts = {}
+        self.root_assistant = {}
 
+    def get_tool(self, tool_name):
+        for t in self.tool_functions:
+            if t.name == tool_name:
+                return t
+        else:
+            print(f'\n{Colors.WARNING}Tool not found:{Colors.ENDC} {Colors.BOLD}{tool_name}{Colors.ENDC}')
+            return None
+
+    def parse_assistants(self, assistants, swarm):
+        for assistant in assistants:
+            assistant['system_prompt'] = parse_text(assistant['system_prompt'])
+            assistant['tools'] = [self.get_tool(t) for t in assistant['tools']]
+            if 'display_name' not in assistant:
+                assistant['display_name'] = assistant['name']
+            if 'model' not in assistant:
+                assistant['model'] = swarm['default_model']
+
+            assistant_obj = Assistant(**assistant)
+            assistant_obj.initialize_history()
+            self.assistants.append(assistant_obj)
+
+    def parse_tools(self, tools):
+        for tool in tools:
+            tool_obj = Tool(**tool)
+            self.tool_functions.append(tool_obj)
 
     def load_tools(self, swarm, assistants):
         tools = []
@@ -39,17 +68,14 @@ class LocalEngine:
             tools_array = swarm['tools']
             for t in tools_array:
                 if t[:4] == 'file':
-                    file_path = t.replace('file:', '')
-                    print(f"Loading tool from file: {file_path}")
-                    with open(file_path, 'r') as f:
-                        tools_def = json.load(f)
-                        tools.extend(tools_def)
+                    tools.extend(parse_text(t, mode='json'))
                 else:
                     tools.append(json.loads(t))            
         except Exception as e:
             print(f"Error loading tools: {e}")
         
-        self.tool_functions = filter_tools(tools, assistants)
+        tools_filtered = filter_tools(tools, assistants)
+        self.parse_tools(tools_filtered)
 
     def load_all_assistants(self, swarm):
         assistants = []
@@ -57,34 +83,69 @@ class LocalEngine:
             assistants_array = swarm['assistants']
             for a in assistants_array:
                 if a[:4] == 'file':
-                    file_path = a.replace('file:', '')
-                    print(f"Loading assistant from file: {file_path}")
-                    with open(file_path, 'r') as f:
-                        assistants_def = json.load(f)
-                        assistants.extend(assistants_def)
+                    assistants.extend(parse_text(a, mode='json'))
                 else:
                     assistants.append(json.loads(a))
         except Exception as e:
             print(f"Error loading assistants: {e}")
         
-        self.assistants = assistants
+        root_assistant = {
+            'name': 'root',
+            'tools': [],
+            'system_prompt': DEFAULT_SYSTEM_PROMPT,
+            'display_name': 'User interface',
+            'model': swarm['interface_model']
+        }
+
+        self.root_assistant = Assistant(**root_assistant)
+        self.root_assistant.initialize_history()
         self.load_tools(swarm, assistants)
+        self.parse_assistants(assistants, swarm)
 
 
-    def initialize_and_display_assistants(self):
+    def update_visible_assistants(self, current_assistant):
+        """
+        Update the visible assistants based on the current assistant.
+        """
+        visible_assistants = []
+        visible_assistants_names = []
+        if current_assistant.name != 'root':
+            parent_assistant = self.get_assistant(current_assistant)
+            if 'sub_assistants' in parent_assistant:
+                visible_assistants_names = parent_assistant['sub_assistants']
+            
+        for assistant in self.assistants:
+            if current_assistant.name == 'root' and 'root_assistant' in assistant and (assistant['root_assistant'] == True or assistant['root_assistant'] == 'true'):
+                visible_assistants.append(assistant)
+            else:
+                if assistant.name in visible_assistants_names:
+                    visible_assistants.append(assistant)
+        self.visible_assistants = visible_assistants
+
+    def load_prompts(self, swarm):
+        prompts = {}
+        try:
+            for key, value in swarm['prompts'].items():
+                prompts[key] = parse_text(value)
+        except Exception as e:
+            print(f"Error loading prompts: {e}")
+        self.prompts = prompts
+
+    def initialize_and_display_assistants(self, swarm):
             """
             Loads all assistants and displays their information.
             """
-            self.load_all_assistants()
+            self.load_all_assistants(swarm)
+            self.update_visible_assistants(self.root_assistant)
             self.initialize_global_history()
 
             for asst in self.assistants:
-                print(f'\n{COLORS.HEADER}Initializing assistant:{COLORS.ENDC}')
-                print(f'{COLORS.OKBLUE}Assistant name:{COLORS.ENDC} {COLORS.BOLD}{asst.name}{COLORS.ENDC}')
+                print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
+                print(f'{Colors.OKBLUE}Assistant name:{Colors.ENDC} {Colors.BOLD}{asst.name}{Colors.ENDC}')
                 if asst.tools:
-                    print(f'{COLORS.OKGREEN}Tools:{COLORS.ENDC} {[tool.name for tool in asst.tools]} \n')
+                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.name if 'name' in tool else 'tool not found' for tool in asst.tools]} \n')
                 else:
-                    print(f"{COLORS.OKGREEN}Tools:{COLORS.ENDC} No tools \n")
+                    print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
 
 
     def get_assistant(self, assistant_name):
@@ -93,57 +154,27 @@ class LocalEngine:
             if assistant.name == assistant_name:
                 return assistant
         print('No assistant found')
-        return None
 
-    def triage_request(self, assistant, message):
+        return self.root_assistant
+
+    def triage_request(self, message):
         """
         Analyze the user message and delegate it to the appropriate assistant.
         """
-        assistant_name = None
-
-        # Determine the appropriate assistant for the message
-        if assistant.sub_assistants is not None:
-            assistant_name = self.determine_appropriate_assistant(assistant, message)
-            if not assistant_name:
-                print('No appropriate assistant determined')
-                return None
-
-            assistant_new = self.get_assistant(assistant_name)
-            if not assistant_new:
-                print(f'No assistant found with name: {assistant_name}')
-                return None
-
-            assistant.pass_context(assistant_new)
-            # Pass along context: if the assistant is a sub-assistant, pass along the context of the parent assistant
-        else:
-            assistant_new = assistant
-
-
-        # If it's a new assistant, so a sub assistant
-        if assistant_name and assistant_name != assistant.name:
-            print(
-                f"{COLORS.OKGREEN}Selecting sub-assistant:{COLORS.ENDC} {COLORS.BOLD}{assistant_new.name}{COLORS.ENDC}"
-            )
-            assistant.add_assistant_message(f"Selecting sub-assistant: {assistant_new.name}")
-        else:
-            print(
-                f"{COLORS.OKGREEN}Assistant:{COLORS.ENDC} {COLORS.BOLD}{assistant_new.name}{COLORS.ENDC}"
-            )
-        return assistant_new
-
-
-    def determine_appropriate_assistant(self, assistant, message):
-        triage_message = [{"role": "system", "content": TRIAGE_SYSTEM_PROMPT}]
+     
+        triage_message = [{"role": "system", "content": self.prompts['triage']}]
+        assistants = [{'name': assistant['name'], 'instructions': assistant['system_prompt'], 'tools': assistant['tools']} for assistant in self.visible_assistants]
         triage_message.append(
             {
                 "role": "user",
-                "content": TRIAGE_MESSAGE_PROMPT.format(
-                    message,
-                    [(asst.name, asst.tools) for asst in [assistant] + [asst for asst in self.assistants if asst.name in assistant.sub_assistants]]                ),
+                "content": f"USER PROMPT: {message}\n\nAvailable assistants: {assistants}"
             }
         )
-        response = get_completion(self.client, triage_message)
-        return response.content
+        triage_response = get_completion(self.client, triage_message).content
+        print(f"Triage response: {triage_response}")
+        assistant = self.get_assistant(triage_response)
+        print(f"Selected assistant: {assistant}")
+        return assistant
 
     def initiate_run(self, task, assistant,test_mode):
         """
@@ -164,7 +195,7 @@ class LocalEngine:
             plan_log['step'].append('response')
             plan_log['step'].append(plan)
             assistant.add_assistant_message(f"Response to user: {plan}")
-            print(f"{COLORS.HEADER}Response:{COLORS.ENDC} {plan}")
+            print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
 
             #add global context
             self.store_context_globally(assistant)
@@ -181,15 +212,15 @@ class LocalEngine:
             assistant.add_tool_message(step)
             human_input_flag = next((tool.human_input for tool in assistant.tools if tool.function.name == step['tool']), False)
             if step['tool']:
-                print(f"{COLORS.HEADER}Running Tool:{COLORS.ENDC} {step['tool']}")
+                print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
                 if human_input_flag:
-                    print(f"\n{COLORS.HEADER}Tool {step['tool']} requires human input:{COLORS.HEADER}")
-                    print(f"{COLORS.GREY}Tool arguments:{COLORS.ENDC} {step['args']}\n")
+                    print(f"\n{Colors.HEADER}Tool {step['tool']} requires human input:{Colors.HEADER}")
+                    print(f"{Colors.GREY}Tool arguments:{Colors.ENDC} {step['args']}\n")
 
                     user_confirmation = input(f"Type 'yes' to execute tool, anything else to skip: ")
                     if user_confirmation.lower() != 'yes':
                         assistant.add_assistant_message(f"Tool {step['tool']} execution skipped by user.")
-                        print(f"{COLORS.GREY}Skipping tool execution.{COLORS.ENDC}")
+                        print(f"{Colors.GREY}Skipping tool execution.{Colors.ENDC}")
                         plan_log['step'].append('tool_skipped')
                         plan_log['step_output'].append(f'Tool {step["tool"]} execution skipped by user! Task not completed.')
                         continue
@@ -200,7 +231,7 @@ class LocalEngine:
 
             if task.iterate and not is_dict_empty(plan_log) and plan:
                iterations += 1
-               new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
+               new_task = self.prompts['iterate'].format(task.description, original_plan, plan_log)
                plan = run.generate_plan(new_task)
             # Store the output for the next iteration
 
@@ -242,11 +273,11 @@ class LocalEngine:
 
             if not test_mode:
                 print(
-            f"{COLORS.OKCYAN}User Query:{COLORS.ENDC} {COLORS.BOLD}{task.description}{COLORS.ENDC}"
+            f"{Colors.OKCYAN}User Query:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
                 )
             else:
                 print(
-            f"{COLORS.OKCYAN}Test:{COLORS.ENDC} {COLORS.BOLD}{task.description}{COLORS.ENDC}"
+            f"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
                 )
             #Maintain assistant if persist flag is true
             if self.persist and self.last_assistant is not None:
@@ -257,7 +288,8 @@ class LocalEngine:
                 assistant.add_user_message(task.description)
 
             #triage based on current assistant
-            selected_assistant = self.triage_request(assistant, task.description)
+            selected_assistant = self.triage_request(task.description)
+            self.update_visible_assistants(selected_assistant)
             if test_mode:
                 task.assistant = selected_assistant.name if selected_assistant else "None"
             if not selected_assistant:
@@ -282,12 +314,12 @@ class LocalEngine:
                     if success_flag:
                         print(f'\n\033[93m{message}\033[0m')
                     else:
-                        print(f"{COLORS.RED}{message}{COLORS.ENDC}")
+                        print(f"{Colors.RED}{message}{Colors.ENDC}")
                     #log
                     assistant.add_assistant_message(message)
                 else:
                     message = "Error evaluating output"
-                    print(f"{COLORS.RED}{message}{COLORS.ENDC}")
+                    print(f"{Colors.RED}{message}{Colors.ENDC}")
                     assistant.add_assistant_message(message)
 
             return original_plan, plan_log
@@ -309,16 +341,16 @@ class LocalEngine:
                 response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(original_plan, task.groundtruth)}])
                 if response.content.lower() == 'true':
                     groundtruth_pass += 1
-                    print(f"{COLORS.OKGREEN}✔ Groundtruth test passed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.groundtruth}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
+                    print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
-                    print(f"{COLORS.RED}✘ Test failed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.groundtruth}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
+                    print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
 
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
                     assistant_pass += 1
-                    print(f"{COLORS.OKGREEN}✔ Correct assistant assigned. {COLORS.ENDC}{COLORS.OKBLUE} Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
+                    print(f"{Colors.OKGREEN}✔ Correct assistant assigned. {Colors.ENDC}{Colors.OKBLUE} Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
                 else:
-                    print(f"{COLORS.RED}✘ Incorrect assistant assigned. {COLORS.ENDC}{COLORS.OKBLUE} Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
+                    print(f"{Colors.RED}✘ Incorrect assistant assigned. {Colors.ENDC}{Colors.OKBLUE} Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
 
 
             elif task.expected_plan:
@@ -328,53 +360,54 @@ class LocalEngine:
 
                 if response.content.lower() == 'true':
                     planning_pass += 1
-                    print(f"{COLORS.OKGREEN}✔ Planning test passed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_plan}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
+                    print(f"{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
                 else:
-                    print(f"{COLORS.RED}✘ Test failed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_plan}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
+                    print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
 
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
                     assistant_pass += 1
-                    print(f"{COLORS.OKGREEN}✔ Correct assistant assigned.  {COLORS.ENDC}{COLORS.OKBLUE}Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
+                    print(f"{Colors.OKGREEN}✔ Correct assistant assigned.  {Colors.ENDC}{Colors.OKBLUE}Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
                 else:
-                    print(f"{COLORS.RED}✘ Incorrect assistant assigned for. {COLORS.ENDC}{COLORS.OKBLUE} Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
+                    print(f"{Colors.RED}✘ Incorrect assistant assigned for. {Colors.ENDC}{Colors.OKBLUE} Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
 
             else:
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
                     assistant_pass += 1
-                    print(f"{COLORS.OKGREEN}✔ Correct assistant assigned for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
+                    print(f"{Colors.OKGREEN}✔ Correct assistant assigned for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
                 else:
-                    print(f"{COLORS.RED}✘ Incorrect assistant assigned for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
+                    print(f"{Colors.RED}✘ Incorrect assistant assigned for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
 
         if total_groundtruth > 0:
-            print(f"\n{COLORS.OKGREEN}Passed {groundtruth_pass} groundtruth tests out of {total_groundtruth} tests. Success rate: {groundtruth_pass / total_groundtruth * 100}%{COLORS.ENDC}\n")
+            print(f"\n{Colors.OKGREEN}Passed {groundtruth_pass} groundtruth tests out of {total_groundtruth} tests. Success rate: {groundtruth_pass / total_groundtruth * 100}%{Colors.ENDC}\n")
         if total_planning > 0:
-            print(f"{COLORS.OKGREEN}Passed {planning_pass} planning tests out of {total_planning} tests. Success rate: {planning_pass / total_planning * 100}%{COLORS.ENDC}\n")
+            print(f"{Colors.OKGREEN}Passed {planning_pass} planning tests out of {total_planning} tests. Success rate: {planning_pass / total_planning * 100}%{Colors.ENDC}\n")
         if total_assistant > 0:
-            print(f"{COLORS.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{COLORS.ENDC}\n")
+            print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
-    def deploy(self, client, test_mode=False, test_file_path=None):
+    def deploy(self, client, swarm, test_mode=False, test_file_path=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
         self.client = client
+        self.load_prompts(swarm)
         if test_mode and test_file_path:
             print("\nTesting the swarm\n\n")
             self.load_test_tasks(test_file_path)
-            self.initialize_and_display_assistants()
+            self.initialize_and_display_assistants(swarm)
             self.run_tests()
             for assistant in self.assistants:
                 if assistant.name == 'user_interface':
                     assistant.save_conversation(test=True)
         else:
             print("\n🐝🐝🐝 Deploying the swarm 🐝🐝🐝\n\n")
-            self.initialize_and_display_assistants()
+            self.initialize_and_display_assistants(swarm)
             print("\n" + "-" * 100 + "\n")
             for task in self.tasks:
                 print('Task',task.id)
-                print(f"{COLORS.BOLD}Running task{COLORS.ENDC}")
+                print(f"{Colors.BOLD}Running task{Colors.ENDC}")
                 self.run_task(task, test_mode)
                 print("\n" + "-" * 100 + "\n")
             #save the session

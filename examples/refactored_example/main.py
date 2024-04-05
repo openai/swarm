@@ -1,7 +1,6 @@
 import shlex
 import argparse
 from src.swarm.swarm import Swarm
-from src.swarm.setup import load_assistants
 from src.validator import validate_settings
 from src.arg_parser import parse_args
 import json
@@ -15,7 +14,6 @@ def main():
         with open('configs/swarm.json') as f:
             swarm = json.load(f)
         validate_settings(settings)
-        assistants = load_assistants(swarm)
     except Exception as e:
         raise Exception(f"Invalid config: {e}")
 
@@ -68,7 +66,8 @@ def main():
     else:
         # Load predefined tasks if any
         # Deploy the Swarm for predefined tasks
-        swarm.load_tasks()
+        tasks_path = settings['tasks_path'] if 'tasks_path' in settings else 'configs/swarm_tasks.json'
+        swarm.load_tasks(tasks_path)
         swarm.deploy()
 
     print("\n\n🍯🐝🍯 Swarm operations complete 🍯🐝🍯\n\n")
