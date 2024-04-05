@@ -14,7 +14,7 @@ class Conversation:
         # Implement summarization logic here
         self.summary = "Summary of the conversation"
 
-    def get_summary(self):
+    def get_summary(self) -> str:
         if not self.summary:
             self.summarize()
         return self.summary

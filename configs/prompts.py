@@ -15,7 +15,7 @@ MAKE SURE THAT OUTPUT IS a list, bracketed by square brackets, with the first el
 # IMPORTANT: If you are missing
 # any information, or do not have all the required arguments for the tools you are planning, just return your response in double quotes.
 # to tell user what information you would need for the request.
-#local_engine_vars
+# local_engine_vars
 LOCAL_PLANNER_PROMPT = """
 You are a planner for the Swarm framework.
 Your job is to create a properly formatted JSON plan step by step, to satisfy the task given.

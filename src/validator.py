@@ -4,10 +4,12 @@ import json
 from src.swarm.tool import Tool
 from src.swarm.assistants import Assistant
 
+
 def validate_tool(tool_definition):
     # Validate the tool using its schema
     Tool(**tool_definition)  # Uncomment if you have a schema to validate tools
     print(f"Validating tool: {tool_definition['function']['name']}")
+
 
 def validate_all_tools(engine):
     tools_path = os.path.join(os.getcwd(), 'configs/tools')
@@ -49,6 +51,8 @@ def validate_all_tools(engine):
     print('\n')
 
     # Function to validate all assistants
+
+
 def validate_all_assistants():
     assistants_path = os.path.join(os.getcwd(), 'configs/assistants')
     for root, dirs, files in os.walk(assistants_path):
@@ -56,11 +60,11 @@ def validate_all_assistants():
             if file.endswith('assistant.json'):
                 file_path = os.path.join(root, file)
                 with open(file_path, 'r') as file:
-                        assistant_data = json.load(file)[0]  # Access the first dictionary in the list
-                        try:
-                            Assistant(**assistant_data)
-                            print(f"{os.path.basename(root)} assistant validated!")
-                        except:
-                            Assistant(**assistant_data)
-                            print(f"Assistant validation failed!")
+                    assistant_data = json.load(file)[0]  # Access the first dictionary in the list
+                    try:
+                        Assistant(**assistant_data)
+                        print(f"{os.path.basename(root)} assistant validated!")
+                    except:
+                        Assistant(**assistant_data)
+                        print(f"Assistant validation failed!")
     print('\n')

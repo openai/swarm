@@ -43,7 +43,8 @@ def main():
             task_parser.add_argument("description", type=str, nargs='?', default="")
             task_parser.add_argument("--iterate", action="store_true", help="Set the iterate flag for the new task.")
             task_parser.add_argument("--evaluate", action="store_true", help="Set the evaluate flag for the new task.")
-            task_parser.add_argument("--assistant", type=str, default="user_interface", help="Specify the assistant for the new task.")
+            task_parser.add_argument("--assistant", type=str, default="user_interface",
+                                     help="Specify the assistant for the new task.")
 
             # Parse task arguments
             task_parsed_args = task_parser.parse_args(task_args)
