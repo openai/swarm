@@ -2,17 +2,27 @@ import importlib
 import json
 import os
 from configs.prompts import TRIAGE_MESSAGE_PROMPT, TRIAGE_SYSTEM_PROMPT, EVAL_GROUNDTRUTH_PROMPT, EVAL_PLANNING_PROMPT, ITERATE_PROMPT
-from src.utils import get_completion, is_dict_empty
-from configs.general import Colors, max_iterations
+from src.utils import get_completion, is_dict_empty, COLORS
 from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
 
+def filter_tools(tools, assistants):
+    """
+    Filter tools to keep only those used by assistants
+    """
+    assistant_tools = []
+    for assistant in assistants:
+       for t in assistant['tools']:
+           tool_definition = next((tool for tool in tools if tool['name'] == t), None)
+           if tool_definition:
+                assistant_tools.append(tool_definition)
+    return assistant_tools
 
 
 class LocalEngine:
-    def __init__(self, client, tasks, persist=False):
+    def __init__(self, client, tasks, settings, persist=False):
         self.client = client
         self.assistants = []
         self.last_assistant = None
@@ -20,50 +30,45 @@ class LocalEngine:
         self.tasks = tasks
         self.tool_functions = []
         self.global_context = {}
+        self.max_iterations = settings['max_iterations']
 
-    def load_tools(self):
-        tools_path = 'configs/tools'
 
-        self.tool_functions = []
-        for tool_dir in os.listdir(tools_path):
-            dir_path = os.path.join(tools_path, tool_dir)
-            if os.path.isdir(dir_path):
-                for tool_name in os.listdir(dir_path):
-                    if tool_name.endswith('.json'):
-                        with open(os.path.join(dir_path, tool_name), 'r') as file:
-                            try:
-                                tool_def = json.load(file)
-                                tool = Tool(type=tool_def['type'], function=tool_def['function'], human_input=tool_def.get('human_input', False))
-                                self.tool_functions.append(tool)
-                            except json.JSONDecodeError as e:
-                                print(f"Error decoding JSON for tool {tool_name}: {e}")
+    def load_tools(self, swarm, assistants):
+        tools = []
+        try:
+            tools_array = swarm['tools']
+            for t in tools_array:
+                if t[:4] == 'file':
+                    file_path = t.replace('file:', '')
+                    print(f"Loading tool from file: {file_path}")
+                    with open(file_path, 'r') as f:
+                        tools_def = json.load(f)
+                        tools.extend(tools_def)
+                else:
+                    tools.append(json.loads(t))            
+        except Exception as e:
+            print(f"Error loading tools: {e}")
+        
+        self.tool_functions = filter_tools(tools, assistants)
 
-    def load_all_assistants(self):
-        base_path = 'configs/assistants'
-        self.load_tools()
-        tool_defs = {tool.function.name: tool.function.dict() for tool in self.tool_functions}
-
-        for assistant_dir in os.listdir(base_path):
-            if '__pycache__' in assistant_dir:
-                continue
-            assistant_config_path = os.path.join(base_path, assistant_dir, "assistant.json")
-            if os.path.exists(assistant_config_path):
-                try:
-                    with open(assistant_config_path, "r") as file:
-                        assistant_config = json.load(file)[0]
-                        assistant_tools_names = assistant_config.get('tools', [])
-                        assistant_name = assistant_config.get('name', assistant_dir)
-                        assistant_tools = [tool for tool in self.tool_functions if tool.function.name in assistant_tools_names]
-
-                        log_flag = assistant_config.pop('log_flag', False)
-                        sub_assistants = assistant_config.get('assistants', None)
-                        planner = assistant_config.get('planner', 'sequential') #default is sequential
-                        print(f"Assistant '{assistant_name}' created.\n")
-                        asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=None, tools=assistant_tools, sub_assistants=sub_assistants, planner=planner)
-                        asst_object.initialize_history()
-                        self.assistants.append(asst_object)
-                except (IOError, json.JSONDecodeError) as e:
-                    print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
+    def load_all_assistants(self, swarm):
+        assistants = []
+        try:
+            assistants_array = swarm['assistants']
+            for a in assistants_array:
+                if a[:4] == 'file':
+                    file_path = a.replace('file:', '')
+                    print(f"Loading assistant from file: {file_path}")
+                    with open(file_path, 'r') as f:
+                        assistants_def = json.load(f)
+                        assistants.extend(assistants_def)
+                else:
+                    assistants.append(json.loads(a))
+        except Exception as e:
+            print(f"Error loading assistants: {e}")
+        
+        self.assistants = assistants
+        self.load_tools(swarm, assistants)
 
 
     def initialize_and_display_assistants(self):
@@ -74,12 +79,12 @@ class LocalEngine:
             self.initialize_global_history()
 
             for asst in self.assistants:
-                print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
-                print(f'{Colors.OKBLUE}Assistant name:{Colors.ENDC} {Colors.BOLD}{asst.name}{Colors.ENDC}')
+                print(f'\n{COLORS.HEADER}Initializing assistant:{COLORS.ENDC}')
+                print(f'{COLORS.OKBLUE}Assistant name:{COLORS.ENDC} {COLORS.BOLD}{asst.name}{COLORS.ENDC}')
                 if asst.tools:
-                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.function.name for tool in asst.tools]} \n')
+                    print(f'{COLORS.OKGREEN}Tools:{COLORS.ENDC} {[tool.name for tool in asst.tools]} \n')
                 else:
-                    print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
+                    print(f"{COLORS.OKGREEN}Tools:{COLORS.ENDC} No tools \n")
 
 
     def get_assistant(self, assistant_name):
@@ -117,12 +122,12 @@ class LocalEngine:
         # If it's a new assistant, so a sub assistant
         if assistant_name and assistant_name != assistant.name:
             print(
-                f"{Colors.OKGREEN}Selecting sub-assistant:{Colors.ENDC} {Colors.BOLD}{assistant_new.name}{Colors.ENDC}"
+                f"{COLORS.OKGREEN}Selecting sub-assistant:{COLORS.ENDC} {COLORS.BOLD}{assistant_new.name}{COLORS.ENDC}"
             )
             assistant.add_assistant_message(f"Selecting sub-assistant: {assistant_new.name}")
         else:
             print(
-                f"{Colors.OKGREEN}Assistant:{Colors.ENDC} {Colors.BOLD}{assistant_new.name}{Colors.ENDC}"
+                f"{COLORS.OKGREEN}Assistant:{COLORS.ENDC} {COLORS.BOLD}{assistant_new.name}{COLORS.ENDC}"
             )
         return assistant_new
 
@@ -159,7 +164,7 @@ class LocalEngine:
             plan_log['step'].append('response')
             plan_log['step'].append(plan)
             assistant.add_assistant_message(f"Response to user: {plan}")
-            print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
+            print(f"{COLORS.HEADER}Response:{COLORS.ENDC} {plan}")
 
             #add global context
             self.store_context_globally(assistant)
@@ -168,7 +173,7 @@ class LocalEngine:
         original_plan = plan.copy()
         iterations = 0
 
-        while plan and iterations< max_iterations:
+        while plan and iterations< self.max_iterations:
             if isinstance(plan,list):
               step = plan.pop(0)
             else:
@@ -176,15 +181,15 @@ class LocalEngine:
             assistant.add_tool_message(step)
             human_input_flag = next((tool.human_input for tool in assistant.tools if tool.function.name == step['tool']), False)
             if step['tool']:
-                print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
+                print(f"{COLORS.HEADER}Running Tool:{COLORS.ENDC} {step['tool']}")
                 if human_input_flag:
-                    print(f"\n{Colors.HEADER}Tool {step['tool']} requires human input:{Colors.HEADER}")
-                    print(f"{Colors.GREY}Tool arguments:{Colors.ENDC} {step['args']}\n")
+                    print(f"\n{COLORS.HEADER}Tool {step['tool']} requires human input:{COLORS.HEADER}")
+                    print(f"{COLORS.GREY}Tool arguments:{COLORS.ENDC} {step['args']}\n")
 
                     user_confirmation = input(f"Type 'yes' to execute tool, anything else to skip: ")
                     if user_confirmation.lower() != 'yes':
                         assistant.add_assistant_message(f"Tool {step['tool']} execution skipped by user.")
-                        print(f"{Colors.GREY}Skipping tool execution.{Colors.ENDC}")
+                        print(f"{COLORS.GREY}Skipping tool execution.{COLORS.ENDC}")
                         plan_log['step'].append('tool_skipped')
                         plan_log['step_output'].append(f'Tool {step["tool"]} execution skipped by user! Task not completed.')
                         continue
@@ -237,11 +242,11 @@ class LocalEngine:
 
             if not test_mode:
                 print(
-            f"{Colors.OKCYAN}User Query:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
+            f"{COLORS.OKCYAN}User Query:{COLORS.ENDC} {COLORS.BOLD}{task.description}{COLORS.ENDC}"
                 )
             else:
                 print(
-            f"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
+            f"{COLORS.OKCYAN}Test:{COLORS.ENDC} {COLORS.BOLD}{task.description}{COLORS.ENDC}"
                 )
             #Maintain assistant if persist flag is true
             if self.persist and self.last_assistant is not None:
@@ -277,12 +282,12 @@ class LocalEngine:
                     if success_flag:
                         print(f'\n\033[93m{message}\033[0m')
                     else:
-                        print(f"{Colors.RED}{message}{Colors.ENDC}")
+                        print(f"{COLORS.RED}{message}{COLORS.ENDC}")
                     #log
                     assistant.add_assistant_message(message)
                 else:
                     message = "Error evaluating output"
-                    print(f"{Colors.RED}{message}{Colors.ENDC}")
+                    print(f"{COLORS.RED}{message}{COLORS.ENDC}")
                     assistant.add_assistant_message(message)
 
             return original_plan, plan_log
@@ -304,16 +309,16 @@ class LocalEngine:
                 response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(original_plan, task.groundtruth)}])
                 if response.content.lower() == 'true':
                     groundtruth_pass += 1
-                    print(f"{Colors.OKGREEN}✔ Groundtruth test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{COLORS.OKGREEN}✔ Groundtruth test passed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.groundtruth}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
                 else:
-                    print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.groundtruth}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{COLORS.RED}✘ Test failed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.groundtruth}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
 
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
                     assistant_pass += 1
-                    print(f"{Colors.OKGREEN}✔ Correct assistant assigned. {Colors.ENDC}{Colors.OKBLUE} Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
+                    print(f"{COLORS.OKGREEN}✔ Correct assistant assigned. {COLORS.ENDC}{COLORS.OKBLUE} Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
                 else:
-                    print(f"{Colors.RED}✘ Incorrect assistant assigned. {Colors.ENDC}{Colors.OKBLUE} Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
+                    print(f"{COLORS.RED}✘ Incorrect assistant assigned. {COLORS.ENDC}{COLORS.OKBLUE} Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
 
 
             elif task.expected_plan:
@@ -323,31 +328,31 @@ class LocalEngine:
 
                 if response.content.lower() == 'true':
                     planning_pass += 1
-                    print(f"{Colors.OKGREEN}✔ Planning test passed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{COLORS.OKGREEN}✔ Planning test passed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_plan}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
                 else:
-                    print(f"{Colors.RED}✘ Test failed for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_plan}{Colors.OKBLUE}, Got: {Colors.ENDC}{original_plan}{Colors.ENDC}")
+                    print(f"{COLORS.RED}✘ Test failed for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_plan}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{original_plan}{COLORS.ENDC}")
 
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
                     assistant_pass += 1
-                    print(f"{Colors.OKGREEN}✔ Correct assistant assigned.  {Colors.ENDC}{Colors.OKBLUE}Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
+                    print(f"{COLORS.OKGREEN}✔ Correct assistant assigned.  {COLORS.ENDC}{COLORS.OKBLUE}Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
                 else:
-                    print(f"{Colors.RED}✘ Incorrect assistant assigned for. {Colors.ENDC}{Colors.OKBLUE} Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
+                    print(f"{COLORS.RED}✘ Incorrect assistant assigned for. {COLORS.ENDC}{COLORS.OKBLUE} Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
 
             else:
                 total_assistant += 1
                 if task.assistant == task.expected_assistant:
                     assistant_pass += 1
-                    print(f"{Colors.OKGREEN}✔ Correct assistant assigned for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
+                    print(f"{COLORS.OKGREEN}✔ Correct assistant assigned for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
                 else:
-                    print(f"{Colors.RED}✘ Incorrect assistant assigned for: {Colors.ENDC}{task.description}{Colors.OKBLUE}. Expected: {Colors.ENDC}{task.expected_assistant}{Colors.OKBLUE}, Got: {Colors.ENDC}{task.assistant}{Colors.ENDC}\n")
+                    print(f"{COLORS.RED}✘ Incorrect assistant assigned for: {COLORS.ENDC}{task.description}{COLORS.OKBLUE}. Expected: {COLORS.ENDC}{task.expected_assistant}{COLORS.OKBLUE}, Got: {COLORS.ENDC}{task.assistant}{COLORS.ENDC}\n")
 
         if total_groundtruth > 0:
-            print(f"\n{Colors.OKGREEN}Passed {groundtruth_pass} groundtruth tests out of {total_groundtruth} tests. Success rate: {groundtruth_pass / total_groundtruth * 100}%{Colors.ENDC}\n")
+            print(f"\n{COLORS.OKGREEN}Passed {groundtruth_pass} groundtruth tests out of {total_groundtruth} tests. Success rate: {groundtruth_pass / total_groundtruth * 100}%{COLORS.ENDC}\n")
         if total_planning > 0:
-            print(f"{Colors.OKGREEN}Passed {planning_pass} planning tests out of {total_planning} tests. Success rate: {planning_pass / total_planning * 100}%{Colors.ENDC}\n")
+            print(f"{COLORS.OKGREEN}Passed {planning_pass} planning tests out of {total_planning} tests. Success rate: {planning_pass / total_planning * 100}%{COLORS.ENDC}\n")
         if total_assistant > 0:
-            print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
+            print(f"{COLORS.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{COLORS.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
     def deploy(self, client, test_mode=False, test_file_path=None):
@@ -369,7 +374,7 @@ class LocalEngine:
             print("\n" + "-" * 100 + "\n")
             for task in self.tasks:
                 print('Task',task.id)
-                print(f"{Colors.BOLD}Running task{Colors.ENDC}")
+                print(f"{COLORS.BOLD}Running task{COLORS.ENDC}")
                 self.run_task(task, test_mode)
                 print("\n" + "-" * 100 + "\n")
             #save the session
