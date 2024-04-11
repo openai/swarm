@@ -6,6 +6,7 @@ from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
+from src.tools.toolbox import Toolbox
 
 DEFAULT_SYSTEM_PROMPT = 'You are a helpful assistant.'
 
@@ -197,10 +198,20 @@ class LocalEngine:
         plan = run.initiate(planner, self.prompts)
         plan_log = {'step': [], 'step_output': []}
         if not isinstance(plan, list):
-            plan_log['step'].append('response')
-            plan_log['step'].append(plan)
-            assistant.add_assistant_message(f"Response to user: {plan}")
-            print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
+            if plan:
+                plan_log['step'].append('response')
+                plan_log['step'].append(plan)
+                assistant.add_assistant_message(f"Response to user: {plan}")
+                print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
+            else:
+                messages = [
+                    {"role": "system", "content": assistant.system_prompt},
+                    {"role": "user", "content": task.description}
+                ]
+                response = get_completion(self.client, messages)
+                print(f"Response: {response.content}")
+                plan_log['step'].append('response')
+                plan_log['step'].append(response.content)
 
             #add global context
             self.store_context_globally(assistant)
@@ -246,30 +257,13 @@ class LocalEngine:
 
     def handle_tool_call(self,assistant, tool_call, test_mode=False):
         tool_name = tool_call['tool']
-        tool_dir = os.path.join(os.getcwd(), 'configs/tools', tool_name)
-        handler_path = os.path.join(tool_dir, 'handler.py')
-
-        # Dynamically import the handler function from the handler.py file
-        if os.path.isfile(handler_path):
-            spec = importlib.util.spec_from_file_location(f"{tool_name}_handler", handler_path)
-            tool_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(tool_module)
-            tool_handler = getattr(tool_module, tool_name)
-            # Call the handler function with arguments
-            try:
-                tool_response = tool_handler(**tool_call['args'])
-            except:
-                return 'Failed to execute tool'
-
-            try:
-                # assistant.add_assistant_message(tool_response.content)
-                return tool_response.content
-            except:
-                # assistant.add_assistant_message(tool_response)
-                return tool_response
-
-        print('No tool file found')
-        return 'No tool file found'
+        toolbox = Toolbox(tool_name, tool_call['args'])
+        try:
+            tool_response = toolbox.execute_tool()
+            assistant.add_assistant_message(tool_response.content)
+        except Exception as e:
+            print(f"Error executing tool: {e}")
+            return 'Failed to execute tool'
 
     def run_task(self, task, test_mode):
             """

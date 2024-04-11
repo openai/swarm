@@ -16,6 +16,8 @@ class Run:
         if planner=='sequential':
             plan = self.generate_plan(prompts)
             return plan
+        else:
+            return None
 
     def generate_plan(self, prompts, task=None):
         if not task:
@@ -26,6 +28,7 @@ class Run:
             {'role':'user','content':f"[AVAILABLE TOOL]\n{self.assistant.tools}\n\n[TASK]\n{task}"}]
             )
         response_string = completion.content
+        print(response_string)
         #Parse out just list in case
         try: # see if plan
             start_pos = response_string.find('[')

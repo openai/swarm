@@ -1,4 +1,4 @@
-from tools.utils import retrieve_results
+from src.utils.vector_search import retrieve_results
 import time
 
 class Toolbox:
