@@ -8,7 +8,7 @@ import time
 
 
 class Assistant(BaseModel):
-    log_flag: bool
+    log_flag: Optional[bool] = True
     name: Optional[str] = None
     instance: Optional[Any] = None
     tools: Optional[list] = None
