@@ -175,12 +175,11 @@ class LocalEngine:
             }
         )
         triage_response = get_completion(self.client, triage_message, self.model).content
-        print(f"Triage response: {triage_response}")
         assistant = self.get_assistant(triage_response)
-        print(f"Selected assistant: {assistant.display_name}")
+        print(f"{Colors.HEADER}Selected assistant:{Colors.ENDC} {assistant.display_name}")
         return assistant
 
-    def initiate_run(self, task, assistant,test_mode):
+    def initiate_run(self, task, assistant, test_mode):
         """
         Run the request with the selected assistant and monitor its status.
         """
@@ -190,10 +189,12 @@ class LocalEngine:
         assistant.current_task_id = task.id
         assistant.runs.append(run)
 
-
-        #Get planner
-        planner = assistant.planner
-        plan = run.initiate(planner)
+        if assistant.name == self.root_assistant.name:
+            planner = None
+        else:
+            #Get planner
+            planner = assistant.planner
+        plan = run.initiate(planner, self.prompts)
         plan_log = {'step': [], 'step_output': []}
         if not isinstance(plan, list):
             plan_log['step'].append('response')
@@ -236,7 +237,7 @@ class LocalEngine:
             if task.iterate and not is_dict_empty(plan_log) and plan:
                iterations += 1
                new_task = self.prompts['iterate'].format(task.description, original_plan, plan_log)
-               plan = run.generate_plan(new_task)
+               plan = run.generate_plan(new_task, self.prompts)
             # Store the output for the next iteration
 
             self.store_context_globally(assistant)

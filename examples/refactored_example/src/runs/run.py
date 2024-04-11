@@ -11,16 +11,20 @@ class Run:
         self.response = None
 
 
-    def initiate(self, planner):
+    def initiate(self, prompts, planner):
         self.status = 'in_progress'
         if planner=='sequential':
-            plan = self.generate_plan()
+            plan = self.generate_plan(prompts)
             return plan
 
-    def generate_plan(self,task=None):
+    def generate_plan(self, prompts, task=None):
         if not task:
             task = self.request
-        completion = get_completion(self.client,[{'role':'user','content':LOCAL_PLANNER_PROMPT.format(tools=self.assistant.tools,task=task)}])
+
+        completion = get_completion(self.client,[
+            {'role': 'system', 'content': prompts['planner']},
+            {'role':'user','content':f"[AVAILABLE TOOL]\n{self.assistant.tools}\n\n[TASK]\n{task}"}]
+            )
         response_string = completion.content
         #Parse out just list in case
         try: # see if plan
