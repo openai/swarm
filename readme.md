@@ -112,7 +112,7 @@ which will start a Swarm session in which you can enter tasks manually. Just wri
 
 E.g.: `"Send an email summarizing George Washington's wikipedia page to Jason Smith" --iterate --evaluate`
 
-## Running tests `test_prompts.jsonl`
+## Running tests
 
 The framework supports three types of evaluations, evals can be any combination of the following types:
 
@@ -128,6 +128,16 @@ You can change these default values in `configs/general.py`, and you can also pr
 Note: the path to the test files is relative to `test_root`.
 
 Test logs will be stored in the `test_runs/` subdirectory of `tests/`.
+
+### Running tests n times
+
+You can run tests n times by passing `--n N`, with N the number of times you want to execute the tests, as a parameter.
+
+For example:
+
+`python3 main.py --test file1.jsonl file2.jsonl -n 4` will run the same tests 4 times in a row.
+
+By default, n=1.
 
 ## Sample configuration
 
