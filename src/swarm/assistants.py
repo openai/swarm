@@ -1,10 +1,12 @@
-from pydantic import BaseModel
-from typing import Any, Optional
-from configs.prompts import EVALUATE_TASK_PROMPT
-from configs.general import Colors
-from src.utils import get_completion
 import json
 import time
+from typing import Any, Optional
+
+from pydantic import BaseModel
+
+from configs.general import Colors
+from configs.prompts import EVALUATE_TASK_PROMPT
+from src.utils import get_completion
 
 
 class Assistant(BaseModel):
@@ -30,7 +32,7 @@ class Assistant(BaseModel):
     def add_tool_message(self, message):
         self.context['history'].append({'task_id': self.current_task_id, 'role': 'user', 'tool': message})
 
-    def print_conversation(self):
+    def print_conversation(self) -> None:
         print(f"\n{Colors.GREY}Conversation with Assistant: {self.name}{Colors.ENDC}\n")
 
         # Group messages by run_id
@@ -66,7 +68,7 @@ class Assistant(BaseModel):
             print("An error occurred while decoding the JSON.")
             return None
 
-    def save_conversation(self, test=False):
+    def save_conversation(self, test=False) -> None:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         if not test:
             filename = f'logs/session_{timestamp}.json'

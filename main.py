@@ -1,10 +1,11 @@
-import shlex
 import argparse
+import shlex
+
+from configs.general import test_root, test_file, engine_name, persist
+from src.arg_parser import parse_args
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
-from configs.general import test_root, test_file, engine_name, persist
 from src.validator import validate_all_tools, validate_all_assistants
-from src.arg_parser import parse_args
 
 
 def main():

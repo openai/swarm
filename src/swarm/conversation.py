@@ -19,7 +19,7 @@ class Conversation:
             self.summarize()
         return self.summary
 
-    def clear_current_messages(self):
+    def clear_current_messages(self) -> None:
         self.current_messages = []
 
     def __repr__(self):

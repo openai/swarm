@@ -1,8 +1,9 @@
-import os
 import importlib
 import json
-from src.swarm.tool import Tool
+import os
+
 from src.swarm.assistants import Assistant
+from src.swarm.tool import Tool
 
 
 def validate_tool(tool_definition):

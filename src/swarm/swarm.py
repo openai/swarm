@@ -1,9 +1,11 @@
 import json
+
 from openai import OpenAI
-from src.tasks.task import Task, EvaluationTask
+
+from configs.general import Colors, tasks_path
 from src.swarm.engines.assistants_engine import AssistantsEngine
 from src.swarm.engines.local_engine import LocalEngine
-from configs.general import Colors, tasks_path
+from src.tasks.task import Task
 
 
 class Swarm:
@@ -40,5 +42,5 @@ class Swarm:
                             assistant=task_json.get('assistant', 'user_interface'))
                 self.tasks.append(task)
 
-    def add_task(self, task):
+    def add_task(self, task) -> None:
         self.tasks.append(task)

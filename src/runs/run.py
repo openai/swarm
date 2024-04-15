@@ -1,6 +1,7 @@
+import json
+
 from configs.prompts import LOCAL_PLANNER_PROMPT
 from src.utils import get_completion
-import json
 
 
 class Run:
