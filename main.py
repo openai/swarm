@@ -1,10 +1,11 @@
-import shlex
 import argparse
+import shlex
+
+from configs.general import test_root, test_file, engine_name, persist
+from src.arg_parser import parse_args
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
-from configs.general import test_root, test_file, engine_name, persist
 from src.validator import validate_all_tools, validate_all_assistants
-from src.arg_parser import parse_args
 
 
 def main():
@@ -43,7 +44,8 @@ def main():
             task_parser.add_argument("description", type=str, nargs='?', default="")
             task_parser.add_argument("--iterate", action="store_true", help="Set the iterate flag for the new task.")
             task_parser.add_argument("--evaluate", action="store_true", help="Set the evaluate flag for the new task.")
-            task_parser.add_argument("--assistant", type=str, default="user_interface", help="Specify the assistant for the new task.")
+            task_parser.add_argument("--assistant", type=str, default="user_interface",
+                                     help="Specify the assistant for the new task.")
 
             # Parse task arguments
             task_parsed_args = task_parser.parse_args(task_args)
