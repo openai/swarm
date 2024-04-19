@@ -34,30 +34,20 @@ For example:
 {{
   "tools": [
     {{
-      "type": "function",
-      "function": {{
         "name": "lookup_contact_email",
         "description": "Looks up a contact and retrieves their email address",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "name": {{
               "type": "string",
               "description": "The name to look up"
             }}
           }},
           "required": ["name"]
-        }}
-      }}
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "email_to",
         "description": "Email the input text to a recipient",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
               "type": "string",
               "description": "The text to email"
@@ -68,17 +58,11 @@ For example:
             }}
           }},
           "required": ["input", "recipient"]
-        }}
-      }}
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "translate",
         "description": "Translate the input to another language",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
               "type": "string",
               "description": "The text to translate"
@@ -89,76 +73,51 @@ For example:
             }}
           }},
           "required": ["input", "language"]
-        }}
-      }}
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "summarize",
         "description": "Summarize input text",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
               "type": "string",
               "description": "The text to summarize"
             }}
           }},
           "required": ["input"]
-        }}
-      }}
     }},
     {{
-      "type": "function",
-      "function": {{
+  
         "name": "joke",
         "description": "Generate a funny joke",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
               "type": "string",
               "description": "The input to generate a joke about"
             }}
           }},
           "required": ["input"]
-        }}
-      }}
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "brainstorm",
         "description": "Brainstorm ideas",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
               "type": "string",
               "description": "The input to brainstorm about"
             }}
           }},
           "required": ["input"]
-        }}
-      }}
     }},
     {{
-      "type": "function",
-      "function": {{
         "name": "poe",
         "description": "Write in the style of author Edgar Allen Poe",
         "parameters": {{
-          "type": "object",
-          "properties": {{
             "input": {{
               "type": "string",
               "description": "The input to write about"
             }}
           }},
           "required": ["input"]
-        }}
-      }}
     }}
   ]
 }}

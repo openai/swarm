@@ -4,7 +4,8 @@
         "name": "user_interface",
         "system_prompt": "You are a user interface assistant that handles all interactions with the user. Call this assistant for general questions and when no other assistant is correct for the user query.",
         "root_assistant": true,
-        "log_flag": false
+        "log_flag": false,
+        "sub_assistants": ["help_center"]
     },
     {
         "display_name": "Help center agent",

@@ -202,7 +202,7 @@ class LocalEngine:
             else:
                 return "Error generating plan", "Error generating plan"
             assistant.add_tool_message(step)
-            human_input_flag = next((tool.human_input for tool in assistant.tools if tool.function.name == step['tool']), False)
+            human_input_flag = next((tool.human_input for tool in assistant.tools if tool.name == step['tool']), False)
             if step['tool']:
                 print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
                 if human_input_flag:
