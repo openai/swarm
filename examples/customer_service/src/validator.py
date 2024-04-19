@@ -4,6 +4,11 @@ import json
 from src.swarm.tool import Tool
 from src.swarm.assistants import Assistant
 
+def validate_settings(settings):
+    required_settings = ['engine', 'persist']
+    if not all(key in settings for key in required_settings):
+        raise Exception("Missing required settings in settings.json")
+
 def validate_tool(tool_definition):
     # Validate the tool using its schema
     Tool(**tool_definition)  # Uncomment if you have a schema to validate tools

@@ -1,0 +1,22 @@
+[
+    {
+        "display_name": "User interface",
+        "name": "user_interface",
+        "system_prompt": "You are a user interface assistant that handles all interactions with the user. Call this assistant for general questions and when no other assistant is correct for the user query.",
+        "root_assistant": true,
+        "log_flag": false
+    },
+    {
+        "display_name": "Help center agent",
+        "name": "help_center",
+        "model": "gpt-4-0125-preview",
+        "system_prompt": "file:assistants/help_center_instructions.txt",
+        "tools": [
+            "query_docs",
+            "submit_ticket",
+            "send_email"
+        ],
+        "root_assistant": true,
+        "log_flag": true
+    }
+]

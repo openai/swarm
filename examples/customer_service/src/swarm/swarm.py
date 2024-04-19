@@ -6,7 +6,9 @@ from src.swarm.engines.local_engine import LocalEngine
 from configs.general import Colors, tasks_path
 
 class Swarm:
-    def __init__(self,engine_name,tasks=[], persist=False):
+    def __init__(self,swarm, settings, engine_name, tasks=[], persist=False):
+        self.swarm = swarm
+        self.settings = settings
         self.tasks = tasks
         self.engine_name = engine_name
         self.engine = None
@@ -26,8 +28,8 @@ class Swarm:
 
         elif self.engine_name =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
-            self.engine = LocalEngine(client,self.tasks, persist=self.persist)
-            self.engine.deploy(client,test_mode,test_file_paths)
+            self.engine = LocalEngine(client,self.tasks, self.settings, persist=self.persist)
+            self.engine.deploy(client, self.swarm, test_mode, test_file_paths)
 
     def load_tasks(self):
         self.tasks = []

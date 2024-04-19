@@ -2,7 +2,7 @@ import importlib
 import json
 import os
 from configs.prompts import TRIAGE_MESSAGE_PROMPT, TRIAGE_SYSTEM_PROMPT, EVAL_GROUNDTRUTH_PROMPT, EVAL_PLANNING_PROMPT, ITERATE_PROMPT
-from src.utils import get_completion, is_dict_empty
+from src.utils import get_completion, is_dict_empty, parse_text
 from configs.general import Colors, max_iterations
 from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
@@ -10,9 +10,22 @@ from src.tasks.task import EvaluationTask
 from src.runs.run import Run
 
 
+def filter_tools(tools, assistants):
+    """
+    Filter tools to keep only those used by assistants
+    """
+    assistant_tools = []
+    for assistant in assistants:
+       if 'tools' in assistant:
+        for t in assistant['tools']:
+            tool_definition = next((tool for tool in tools if tool['name'] == t), None)
+            if tool_definition:
+                    assistant_tools.append(tool_definition)
+    return assistant_tools
+
 
 class LocalEngine:
-    def __init__(self, client, tasks, persist=False):
+    def __init__(self, client, tasks, settings, persist=False):
         self.client = client
         self.assistants = []
         self.last_assistant = None
@@ -20,66 +33,81 @@ class LocalEngine:
         self.tasks = tasks
         self.tool_functions = []
         self.global_context = {}
+        self.max_iterations = settings['max_iterations']
 
-    def load_tools(self):
-        tools_path = 'configs/tools'
+    def get_tool(self, tool_name):
+        for t in self.tool_functions:
+            if t.name == tool_name:
+                return t
+        else:
+            print(f'\n{Colors.WARNING}Tool not found:{Colors.ENDC} {Colors.BOLD}{tool_name}{Colors.ENDC}')
+            return None
 
-        self.tool_functions = []
-        for tool_dir in os.listdir(tools_path):
-            dir_path = os.path.join(tools_path, tool_dir)
-            if os.path.isdir(dir_path):
-                for tool_name in os.listdir(dir_path):
-                    if tool_name.endswith('.json'):
-                        with open(os.path.join(dir_path, tool_name), 'r') as file:
-                            try:
-                                tool_def = json.load(file)
-                                tool = Tool(type=tool_def['type'], function=tool_def['function'], human_input=tool_def.get('human_input', False))
-                                self.tool_functions.append(tool)
-                            except json.JSONDecodeError as e:
-                                print(f"Error decoding JSON for tool {tool_name}: {e}")
+    def parse_assistants(self, assistants, swarm):
+        for assistant in assistants:
+            assistant['system_prompt'] = parse_text(assistant['system_prompt'])
+            assistant['tools'] = [self.get_tool(t) for t in assistant['tools']] if 'tools' in assistant else []
+            if 'display_name' not in assistant:
+                assistant['display_name'] = assistant['name']
+            if 'model' not in assistant:
+                assistant['model'] = swarm['default_model']
 
-    def load_all_assistants(self):
-        base_path = 'configs/assistants'
-        self.load_tools()
-        tool_defs = {tool.function.name: tool.function.dict() for tool in self.tool_functions}
+            assistant_obj = Assistant(**assistant)
+            assistant_obj.initialize_history()
+            self.assistants.append(assistant_obj)
 
-        for assistant_dir in os.listdir(base_path):
-            if '__pycache__' in assistant_dir:
-                continue
-            assistant_config_path = os.path.join(base_path, assistant_dir, "assistant.json")
-            if os.path.exists(assistant_config_path):
-                try:
-                    with open(assistant_config_path, "r") as file:
-                        assistant_config = json.load(file)[0]
-                        assistant_tools_names = assistant_config.get('tools', [])
-                        assistant_name = assistant_config.get('name', assistant_dir)
-                        assistant_tools = [tool for tool in self.tool_functions if tool.function.name in assistant_tools_names]
+    def parse_tools(self, tools):
+        for tool in tools:
+            tool_obj = Tool(**tool)
+            self.tool_functions.append(tool_obj)
 
-                        log_flag = assistant_config.pop('log_flag', False)
-                        sub_assistants = assistant_config.get('assistants', None)
-                        planner = assistant_config.get('planner', 'sequential') #default is sequential
-                        print(f"Assistant '{assistant_name}' created.\n")
-                        asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=None, tools=assistant_tools, sub_assistants=sub_assistants, planner=planner)
-                        asst_object.initialize_history()
-                        self.assistants.append(asst_object)
-                except (IOError, json.JSONDecodeError) as e:
-                    print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
+    def load_tools(self, swarm, assistants):
+        tools = []
+        try:
+            tools_array = swarm['tools']
+            for t in tools_array:
+                if t[:4] == 'file':
+                    tools.extend(parse_text(t, mode='json'))
+                else:
+                    tools.append(json.loads(t))            
+        except Exception as e:
+            print(f"Error loading tools: {e}")
+        
+        tools_filtered = filter_tools(tools, assistants)
+        self.parse_tools(tools_filtered)
+
+    def load_all_assistants(self, swarm):
+            assistants = []
+            try:
+                assistants_array = swarm['assistants']
+                for a in assistants_array:
+                    if a[:4] == 'file':
+                        assistants.extend(parse_text(a, mode='json'))
+                    else:
+                        assistants.append(json.loads(a))
+            except Exception as e:
+                print(f"Error loading assistants: {e}")
+
+            self.load_tools(swarm, assistants)
+            self.parse_assistants(assistants, swarm)
 
 
-    def initialize_and_display_assistants(self):
+    def initialize_and_display_assistants(self, swarm):
             """
             Loads all assistants and displays their information.
             """
-            self.load_all_assistants()
+            self.model = swarm['interface_model']
+            self.load_all_assistants(swarm)
             self.initialize_global_history()
 
             for asst in self.assistants:
                 print(f'\n{Colors.HEADER}Initializing assistant:{Colors.ENDC}')
                 print(f'{Colors.OKBLUE}Assistant name:{Colors.ENDC} {Colors.BOLD}{asst.name}{Colors.ENDC}')
                 if asst.tools:
-                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.function.name for tool in asst.tools]} \n')
+                    print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.name if tool else 'tool not found' for tool in asst.tools]} \n')
                 else:
                     print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
+
 
 
     def get_assistant(self, assistant_name):
@@ -350,7 +378,8 @@ class LocalEngine:
             print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
-    def deploy(self, client, test_mode=False, test_file_path=None):
+
+    def deploy(self, client, swarm, test_mode=False, test_file_path=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
@@ -358,14 +387,14 @@ class LocalEngine:
         if test_mode and test_file_path:
             print("\nTesting the swarm\n\n")
             self.load_test_tasks(test_file_path)
-            self.initialize_and_display_assistants()
+            self.initialize_and_display_assistants(swarm)
             self.run_tests()
             for assistant in self.assistants:
                 if assistant.name == 'user_interface':
                     assistant.save_conversation(test=True)
         else:
             print("\n🐝🐝🐝 Deploying the swarm 🐝🐝🐝\n\n")
-            self.initialize_and_display_assistants()
+            self.initialize_and_display_assistants(swarm)
             print("\n" + "-" * 100 + "\n")
             for task in self.tasks:
                 print('Task',task.id)

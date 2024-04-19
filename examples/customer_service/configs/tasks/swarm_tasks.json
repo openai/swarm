@@ -1,0 +1,14 @@
+[
+  {
+    "description": "What is the square root of 16?"
+  },
+  {
+    "description": "What is your cancelation policy?",
+    "evaluate": true
+  },
+  {
+    "description": "Can you help me cancel my order please?",
+    "iterate": true,
+    "evaluate": true
+  }
+]

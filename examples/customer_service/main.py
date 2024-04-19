@@ -3,20 +3,24 @@ import argparse
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
 from configs.general import test_root, test_file, engine_name, persist
-from src.validator import validate_all_tools, validate_all_assistants
+from src.validator import validate_settings
 from src.arg_parser import parse_args
+import json
 
 
 def main():
     args = parse_args()
     try:
-        validate_all_tools(engine_name)
-        validate_all_assistants()
-    except:
-        raise Exception("Validation failed")
+        with open('configs/settings.json') as f:
+            settings = json.load(f)
+        with open('configs/swarm.json') as f:
+            swarm = json.load(f)
+        validate_settings(settings)
+    except Exception as e:
+        raise Exception(f"Invalid config: {e}")
 
-    swarm = Swarm(
-        engine_name=engine_name, persist=persist)
+    swarm = Swarm(swarm=swarm, settings=settings,
+        engine_name=settings['engine'], persist=settings['persist'])
 
     if args.test is not None:
         test_files = args.test
@@ -24,7 +28,7 @@ def main():
             test_file_paths = [f"{test_root}/{test_file}"]
         else:
             test_file_paths = [f"{test_root}/{file}" for file in test_files]
-        swarm = Swarm(engine_name='local')
+        swarm = Swarm(engine_name='local', swarm=swarm, settings=settings)
         swarm.deploy(test_mode=True, test_file_paths=test_file_paths)
 
     elif args.input:

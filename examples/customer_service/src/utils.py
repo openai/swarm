@@ -1,3 +1,7 @@
+import json
+
+CONFIGS_PATH = 'configs'
+
 def get_completion(client,
     messages: list[dict[str, str]],
     model: str = "gpt-4-0125-preview",
@@ -23,3 +27,15 @@ def get_completion(client,
 
 def is_dict_empty(d):
     return all(not v for v in d.values())
+
+def parse_text(text, mode='txt'):
+    if text[:4] == 'file':
+        file_path = text.replace('file:', '')
+        #print(f"Loading text from file: {file_path}")
+        with open(f"{CONFIGS_PATH}/{file_path}", 'r') as f:
+            if mode == 'json':
+                return json.load(f)
+            else:
+                return f.read()
+    return text
+        

@@ -1,0 +1,45 @@
+[
+    {
+        "name": "query_docs",
+        "description": "Tool to get information about OpenAI products to help users. This JUST querys the data, it does not respond to user.",
+        "parameters": {
+            "query": {
+                "type": "string",
+                "description": "A detailed description of what the user wants to know."
+            }
+        },
+        "required": [
+            "query"
+        ]
+    },
+    {
+        "name": "submit_ticket",
+        "description": "Tool to submit a help ticket for an issue or request for the OpenAI help center.",
+        "parameters": {
+            "description": {
+                "type": "string",
+                "description": "Brief description of the technical details of the complaint"
+            }
+        },
+        "required": [
+            "description"
+        ]
+    },
+    {
+        "name": "send_email",
+        "description":  "Tool to send an email to any email address.",
+        "parameters": {
+            "message": {
+                "type": "string",
+                "description": "Message content in the email. Make sure to use double quotes for any special characters."
+              },
+              "email_address": {
+                "type": "string",
+                "description": "Email address to send email to. Example: 'me@gmail.com'"
+              }
+        },
+        "required": [
+            "email_address", "message"
+        ]
+    }
+]

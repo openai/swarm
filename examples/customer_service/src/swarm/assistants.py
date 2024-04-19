@@ -8,12 +8,16 @@ import time
 
 
 class Assistant(BaseModel):
-    log_flag: bool
+    log_flag: Optional[bool] = True
+    model: str = ''
+    system_prompt: str = ''
+    display_name: Optional[str] = ''
     name: Optional[str] = None
     instance: Optional[Any] = None
     tools: Optional[list] = None
     current_task_id: str = None
     sub_assistants: Optional[list] = None
+    root_assistant: Optional[bool] = False
     runs: list = []
     context: Optional[dict] = {}
     planner: str = 'sequential' #default to sequential
