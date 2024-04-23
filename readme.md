@@ -56,6 +56,18 @@ Finally, in `tests`, we have the evaluations to run against our Swarm system (se
 
 ## Setting up
 
+
+### 0. Installation
+
+Swarm manages dependencies with [poetry](https://python-poetry.org/docs/). Poetry is a tool for dependency management and packaging in Python. 
+It allows you to declare the libraries your project depends on and it will manage (install/update) them for you. Poetry offers a lockfile to ensure repeatable installs, and can 
+build your project for distribution. Note that Poetry should always be installed in a dedicated virtual environment to isolate it from the rest of your system. 
+
+* To install the dependencies, run the following command: `poetry install`
+* To update poetry, run the following command: `poetry self update`
+* To add a new dependency, run the following command: `poetry add <package-name>`
+
+
 ### 1. Defining assistants and tools
 
 - An assistant will be initialized for every subfolder in the `assistants` folder based on the `assistant.json` specifications.

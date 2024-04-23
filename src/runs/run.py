@@ -37,7 +37,8 @@ class Run:
                 try:
                     response_formatted = json.loads(response_string)
                     return response_formatted
-                except:
+                except Exception as e:
+                    print(e)
                     return "Response not in correct format"
         except:
             return response_string

@@ -29,15 +29,17 @@ class EvalFunction:
         print(f"Number(s) to compare: {numbers}")
         try:
             ground_truth = ast.literal_eval(self.groundtruth)
-        except:
+        except Exception as e:
             print(f"Ground truth is not numeric: {self.groundtruth}")
+            print(e)
             return False
         try:
             for n in numbers:
                 if int(ground_truth) == int(n) or float(ground_truth) == float(n):
                     return True
-        except:
+        except Exception as e:
             print(f"Error in comparing numbers: {numbers}")
+            print(e)
         return False
 
     def name(self):

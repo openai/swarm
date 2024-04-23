@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 from openai import OpenAI
 
 client = OpenAI()
@@ -11,7 +12,6 @@ article_list = os.listdir('data')
 articles = []
 
 for x in article_list:
-
     article_path = 'data/' + x
 
     # Opening JSON file
@@ -28,7 +28,7 @@ for x in article_list:
 
 for i, x in enumerate(articles):
     try:
-        embedding = client.embeddings.create(model=EMBEDDING_MODEL,input=x['text'])
+        embedding = client.embeddings.create(model=EMBEDDING_MODEL, input=x['text'])
         articles[i].update({"embedding": embedding.data[0].embedding})
     except Exception as e:
         print(x['title'])
@@ -37,7 +37,6 @@ for i, x in enumerate(articles):
 import qdrant_client
 from qdrant_client.http import models as rest
 import pandas as pd
-
 
 qdrant = qdrant_client.QdrantClient(host='localhost')
 qdrant.get_collections()

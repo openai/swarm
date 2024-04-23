@@ -3,7 +3,7 @@ def get_completion(client,
                    model: str = "gpt-4-0125-preview",
                    max_tokens=2000,
                    temperature=0.7,
-                   tools=None) :
+                   tools=None):
     # Prepare the request parameters
     request_params = {
         "model": model,
