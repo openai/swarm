@@ -1,5 +1,6 @@
 import argparse
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--engine", choices=["local", "assistants"], default="local", help="Choose the engine to use.")

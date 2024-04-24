@@ -14,12 +14,12 @@ class Conversation:
         # Implement summarization logic here
         self.summary = "Summary of the conversation"
 
-    def get_summary(self):
+    def get_summary(self) -> str:
         if not self.summary:
             self.summarize()
         return self.summary
 
-    def clear_current_messages(self):
+    def clear_current_messages(self) -> None:
         self.current_messages = []
 
     def __repr__(self):
