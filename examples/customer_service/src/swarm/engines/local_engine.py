@@ -23,7 +23,6 @@ class LocalEngine:
 
     def load_tools(self):
         tools_path = 'configs/tools'
-
         self.tool_functions = []
         for tool_dir in os.listdir(tools_path):
             dir_path = os.path.join(tools_path, tool_dir)
@@ -44,27 +43,24 @@ class LocalEngine:
         tool_defs = {tool.function.name: tool.function.dict() for tool in self.tool_functions}
 
         for assistant_dir in os.listdir(base_path):
-            if '__pycache__' in assistant_dir:
-                continue
-            assistant_config_path = os.path.join(base_path, assistant_dir, "assistant.json")
-            if os.path.exists(assistant_config_path):
-                try:
-                    with open(assistant_config_path, "r") as file:
-                        assistant_config = json.load(file)[0]
-                        assistant_tools_names = assistant_config.get('tools', [])
-                        assistant_name = assistant_config.get('name', assistant_dir)
-                        assistant_tools = [tool for tool in self.tool_functions if tool.function.name in assistant_tools_names]
-
-                        log_flag = assistant_config.pop('log_flag', False)
-                        sub_assistants = assistant_config.get('assistants', None)
-                        planner = assistant_config.get('planner', 'sequential') #default is sequential
-                        print(f"Assistant '{assistant_name}' created.\n")
-                        asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=None, tools=assistant_tools, sub_assistants=sub_assistants, planner=planner)
-                        asst_object.initialize_history()
-                        self.assistants.append(asst_object)
-                except (IOError, json.JSONDecodeError) as e:
-                    print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
-
+            if '__pycache__' not in assistant_dir:
+                assistant_config_path = os.path.join(base_path, assistant_dir, "assistant.json")
+                if os.path.exists(assistant_config_path):
+                    try:
+                        with open(assistant_config_path, "r") as file:
+                            assistant_config = json.load(file)[0]
+                            assistant_tools_names = assistant_config.get('tools', [])
+                            assistant_name = assistant_config.get('name', assistant_dir)
+                            assistant_tools = [tool for tool in self.tool_functions if tool.function.name in assistant_tools_names]
+                            log_flag = assistant_config.pop('log_flag', False)
+                            sub_assistants = assistant_config.get('assistants', None)
+                            planner = assistant_config.get('planner', 'sequential')  # default is sequential
+                            print(f"Assistant '{assistant_name}' created.\n")
+                            asst_object = Assistant(name=assistant_name, log_flag=log_flag, instance=None, tools=assistant_tools, sub_assistants=sub_assistants, planner=planner)
+                            asst_object.initialize_history()
+                            self.assistants.append(asst_object)
+                    except (IOError, json.JSONDecodeError) as e:
+                        print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
 
     def initialize_and_display_assistants(self):
             """
@@ -140,153 +136,99 @@ class LocalEngine:
         response = get_completion(self.client, triage_message)
         return response.content
 
-    def initiate_run(self, task, assistant,test_mode):
-        """
-        Run the request with the selected assistant and monitor its status.
-        """
+    def initiate_run(self, task, assistant):
         run = Run(assistant, task.description, self.client)
-
-        #Update assistant with current task and run
         assistant.current_task_id = task.id
         assistant.runs.append(run)
-
-
-        #Get planner
         planner = assistant.planner
         plan = run.initiate(planner)
         plan_log = {'step': [], 'step_output': []}
         if not isinstance(plan, list):
             plan_log['step'].append('response')
-            plan_log['step'].append(plan)
+            plan_log['step_output'].append(plan)
             assistant.add_assistant_message(f"Response to user: {plan}")
             print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
-
-            #add global context
-            self.store_context_globally(assistant)
             return plan_log, plan_log
 
         original_plan = plan.copy()
         iterations = 0
-
-        while plan and iterations< max_iterations:
-            if isinstance(plan,list):
-              step = plan.pop(0)
-            else:
-                return "Error generating plan", "Error generating plan"
-            assistant.add_tool_message(step)
-            human_input_flag = next((tool.human_input for tool in assistant.tools if tool.function.name == step['tool']), False)
-            if step['tool']:
-                print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
-                if human_input_flag:
-                    print(f"\n{Colors.HEADER}Tool {step['tool']} requires human input:{Colors.HEADER}")
-                    print(f"{Colors.GREY}Tool arguments:{Colors.ENDC} {step['args']}\n")
-
-                    user_confirmation = input(f"Type 'yes' to execute tool, anything else to skip: ")
-                    if user_confirmation.lower() != 'yes':
-                        assistant.add_assistant_message(f"Tool {step['tool']} execution skipped by user.")
-                        print(f"{Colors.GREY}Skipping tool execution.{Colors.ENDC}")
-                        plan_log['step'].append('tool_skipped')
-                        plan_log['step_output'].append(f'Tool {step["tool"]} execution skipped by user! Task not completed.')
-                        continue
-                    assistant.add_assistant_message(f"Tool {step['tool']} execution approved by user.")
-            tool_output = self.handle_tool_call(assistant, step, test_mode)
-            plan_log['step'].append(step)
-            plan_log['step_output'].append(tool_output)
-
-            if task.iterate and not is_dict_empty(plan_log) and plan:
-               iterations += 1
-               new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
-               plan = run.generate_plan(new_task)
-            # Store the output for the next iteration
-
-            self.store_context_globally(assistant)
-
+        while plan and iterations < max_iterations:
+            if isinstance(plan, list):
+                step = plan.pop(0)
+                assistant.add_tool_message(step)
+                if step['tool']:
+                    print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
+                    if 'human_input' in step and step['human_input']:
+                        print(f"\n{Colors.HEADER}Tool {step['tool']} requires human input:{Colors.ENDC}")
+                        print(f"{Colors.GREY}Tool arguments:{Colors.ENDC} {step['args']}\n")
+                        user_confirmation = input("Type 'yes' to execute tool, anything else to skip: ")
+                        if user_confirmation.lower() != 'yes':
+                            assistant.add_assistant_message(f"Tool {step['tool']} execution skipped by user.")
+                            print(f"{Colors.GREY}Skipping tool execution.{Colors.ENDC}")
+                            plan_log['step'].append('tool_skipped')
+                            plan_log['step_output'].append('Tool execution skipped by user!')
+                            continue
+                    tool_output = self.handle_tool_call(assistant, step)
+                    plan_log['step'].append(step)
+                    plan_log['step_output'].append(tool_output)
+                if task.iterate and not is_dict_empty(plan_log) and plan:
+                    iterations += 1
+                    new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
+                    plan = run.generate_plan(new_task)
+                self.store_context_globally(assistant)
         return original_plan, plan_log
 
-    def handle_tool_call(self,assistant, tool_call, test_mode=False):
+    def handle_tool_call(self, assistant, tool_call):
         tool_name = tool_call['tool']
         tool_dir = os.path.join(os.getcwd(), 'configs/tools', tool_name)
         handler_path = os.path.join(tool_dir, 'handler.py')
-
-        # Dynamically import the handler function from the handler.py file
         if os.path.isfile(handler_path):
             spec = importlib.util.spec_from_file_location(f"{tool_name}_handler", handler_path)
             tool_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(tool_module)
             tool_handler = getattr(tool_module, tool_name)
-            # Call the handler function with arguments
             try:
-                tool_response = tool_handler(**tool_call['args'])
-            except:
+                return tool_handler(**tool_call['args'])
+            except Exception as e:
+                print(f"Failed to execute tool due to an error: {e}")
                 return 'Failed to execute tool'
-
-            try:
-                # assistant.add_assistant_message(tool_response.content)
-                return tool_response.content
-            except:
-                # assistant.add_assistant_message(tool_response)
-                return tool_response
-
         print('No tool file found')
         return 'No tool file found'
 
-    def run_task(self, task, test_mode):
-            """
-            Processes a given task.
-            """
+    def run_task(self, task):
+        print(f"{Colors.OKCYAN}Processing Task: {Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}")
+        if self.persist and self.last_assistant:
+            assistant = self.last_assistant
+        else:
+            assistant = self.get_assistant(task.assistant)
+            assistant.current_task_id = task.id
+            assistant.add_user_message(task.description)
 
-            if not test_mode:
-                print(
-            f"{Colors.OKCYAN}User Query:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
-                )
-            else:
-                print(
-            f"{Colors.OKCYAN}Test:{Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}"
-                )
-            #Maintain assistant if persist flag is true
-            if self.persist and self.last_assistant is not None:
-                assistant = self.last_assistant
-            else:
-                assistant = self.get_assistant(task.assistant)
-                assistant.current_task_id = task.id
-                assistant.add_user_message(task.description)
+        selected_assistant = self.triage_request(assistant, task.description)
+        if not selected_assistant:
+            print(f"No suitable assistant found for the task: {task.description}")
+            return None
 
-            #triage based on current assistant
-            selected_assistant = self.triage_request(assistant, task.description)
-            if test_mode:
-                task.assistant = selected_assistant.name if selected_assistant else "None"
-            if not selected_assistant:
-                if not test_mode:
-                    print(f"No suitable assistant found for the task: {task.description}")
-                return None
+        original_plan, plan_log = self.initiate_run(task, selected_assistant)
 
-            # Run the request with the determined or specified assistant
-            original_plan, plan_log = self.initiate_run(task, selected_assistant,test_mode)
+        self.last_assistant = selected_assistant
 
-            #set last assistant
-            self.last_assistant = selected_assistant
-
-            #if evaluating the task
-            if task.evaluate:
-                output = assistant.evaluate(self.client,task, plan_log)
-                if output is not None:
-                    success_flag = False
-                    if not isinstance(output[0],bool):
-                     success_flag = False if output[0].lower() == 'false' else bool(output[0])
-                    message = output[1]
-                    if success_flag:
-                        print(f'\n\033[93m{message}\033[0m')
-                    else:
-                        print(f"{Colors.RED}{message}{Colors.ENDC}")
-                    #log
-                    assistant.add_assistant_message(message)
+        if isinstance(task, EvaluationTask):
+            output = assistant.evaluate(self.client, task, plan_log)
+            if output:
+                success_flag = output[0] if isinstance(output[0], bool) else output[0].lower() == 'true'
+                message = output[1]
+                if success_flag:
+                    print(f'\n{Colors.OKGREEN}{message}{Colors.ENDC}')
                 else:
-                    message = "Error evaluating output"
                     print(f"{Colors.RED}{message}{Colors.ENDC}")
-                    assistant.add_assistant_message(message)
+                assistant.add_assistant_message(message)
+            else:
+                message = "Error evaluating output"
+                print(f"{Colors.RED}{message}{Colors.ENDC}")
+                assistant.add_assistant_message(message)
 
-            return original_plan, plan_log
-
+        return original_plan, plan_log
 
     def run_tests(self):
         total_groundtruth = 0
@@ -296,7 +238,7 @@ class LocalEngine:
         planning_pass = 0
         assistant_pass = 0
         for task in self.tasks:
-            original_plan, plan_log = self.run_task(task, test_mode=True)
+            original_plan, plan_log = self.run_task(task)
 
             if task.groundtruth:
                 total_groundtruth += 1
@@ -350,12 +292,12 @@ class LocalEngine:
             print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
-    def deploy(self, client, test_mode=False, test_file_path=None):
+    def deploy(self, client, test_file_path=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
         self.client = client
-        if test_mode and test_file_path:
+        if test_file_path:
             print("\nTesting the swarm\n\n")
             self.load_test_tasks(test_file_path)
             self.initialize_and_display_assistants()
@@ -370,7 +312,7 @@ class LocalEngine:
             for task in self.tasks:
                 print('Task',task.id)
                 print(f"{Colors.BOLD}Running task{Colors.ENDC}")
-                self.run_task(task, test_mode)
+                self.run_task(task)
                 print("\n" + "-" * 100 + "\n")
             #save the session
             for assistant in self.assistants:

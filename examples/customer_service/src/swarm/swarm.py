@@ -12,8 +12,7 @@ class Swarm:
         self.engine = None
         self.persist = persist
 
-
-    def deploy(self, test_mode=False,test_file_paths=None):
+    def deploy(self,test_file_paths=None):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
@@ -22,12 +21,12 @@ class Swarm:
         if self.engine_name == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
             self.engine = AssistantsEngine(client,self.tasks)
-            self.engine.deploy(client,test_mode,test_file_paths)
+            self.engine.deploy(client,test_file_paths)
 
         elif self.engine_name =='local':
             print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
             self.engine = LocalEngine(client,self.tasks, persist=self.persist)
-            self.engine.deploy(client,test_mode,test_file_paths)
+            self.engine.deploy(client,test_file_paths)
 
     def load_tasks(self):
         self.tasks = []
