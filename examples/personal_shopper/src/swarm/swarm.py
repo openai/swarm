@@ -12,33 +12,34 @@ class Swarm:
         self.engine = None
         self.persist = persist
 
-    def deploy(self,test_file_paths=None):
+    def initialize(self):
+        """
+        Initialize the environment and assistants.
+        """
+        print("\n🐝🐝🐝 Initializing the swarm 🐝🐝🐝\n\n")
+        client = OpenAI()
+        if self.engine_name == 'local':
+            self.engine = LocalEngine(client, tasks=self.tasks, persist=self.persist)
+        elif self.engine_name == 'assistants':
+            self.engine = AssistantsEngine(client, tasks=self.tasks)
+        self.engine.initialize()
+
+    def load_tasks(self):
+        self.engine.load_tasks()
+
+    def deploy(self):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
-        client = OpenAI()
-        #Initialize swarm first
-        if self.engine_name == 'assistants':
-            print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
-            self.engine = AssistantsEngine(client,self.tasks)
-            self.engine.deploy(client,test_file_paths)
+        self.engine.deploy()
 
-        elif self.engine_name =='local':
-            print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
-            self.engine = LocalEngine(client,self.tasks, persist=self.persist)
-            self.engine.deploy(client,test_file_paths)
-
-    def load_tasks(self):
-        self.tasks = []
-        with open(tasks_path, 'r') as file:
-            tasks_data = json.load(file)
-            for task_json in tasks_data:
-                task = Task(description=task_json['description'],
-                            iterate=task_json.get('iterate', False),
-                            evaluate=task_json.get('evaluate', False),
-                            assistant=task_json.get('assistant', 'user_interface'))
-                self.tasks.append(task)
+    def run_tests(self, test_file_paths):
+        """
+        Run tests on the tasks specified in the test files.
+        """
+        self.engine.load_test_tasks(test_file_paths)
+        self.engine.run_tests()
 
     def add_task(self, task):
-        self.tasks.append(task)
+        self.engine.add_task(task)
 

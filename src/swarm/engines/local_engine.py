@@ -3,11 +3,12 @@ import json
 import os
 from configs.prompts import TRIAGE_MESSAGE_PROMPT, TRIAGE_SYSTEM_PROMPT, EVAL_GROUNDTRUTH_PROMPT, EVAL_PLANNING_PROMPT, ITERATE_PROMPT
 from src.utils import get_completion, is_dict_empty
-from configs.general import Colors, max_iterations
+from configs.general import Colors, max_iterations, tasks_path
 from src.swarm.assistants import Assistant
 from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
+from src.tasks.task import Task
 
 
 
@@ -37,10 +38,9 @@ class LocalEngine:
                             except json.JSONDecodeError as e:
                                 print(f"Error decoding JSON for tool {tool_name}: {e}")
 
+
     def load_all_assistants(self):
         base_path = 'configs/assistants'
-        self.load_tools()
-        tool_defs = {tool.function.name: tool.function.dict() for tool in self.tool_functions}
 
         for assistant_dir in os.listdir(base_path):
             if '__pycache__' not in assistant_dir:
@@ -62,10 +62,25 @@ class LocalEngine:
                     except (IOError, json.JSONDecodeError) as e:
                         print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
 
-    def initialize_and_display_assistants(self):
+    def load_tasks(self):
+        self.tasks = []
+        with open(tasks_path, 'r') as file:
+            tasks_data = json.load(file)
+            for task_json in tasks_data:
+                task = Task(description=task_json['description'],
+                            iterate=task_json.get('iterate', False),
+                            evaluate=task_json.get('evaluate', False),
+                            assistant=task_json.get('assistant', 'user_interface'))
+                self.tasks.append(task)
+
+    def add_task(self,task):
+        self.tasks.append(task)
+
+    def initialize(self):
             """
             Loads all assistants and displays their information.
             """
+            self.load_tools()
             self.load_all_assistants()
             self.initialize_global_history()
 
@@ -76,6 +91,8 @@ class LocalEngine:
                     print(f'{Colors.OKGREEN}Tools:{Colors.ENDC} {[tool.function.name for tool in asst.tools]} \n')
                 else:
                     print(f"{Colors.OKGREEN}Tools:{Colors.ENDC} No tools \n")
+            print("\n" + "-" * 100 + "\n")
+
 
 
     def get_assistant(self, assistant_name):
@@ -217,7 +234,7 @@ class LocalEngine:
         return 'No tool file found'
 
     def run_task(self, task):
-        print(f"{Colors.OKCYAN}Processing Task: {Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}")
+        print(f"{Colors.OKCYAN}Running Task: {Colors.ENDC} {Colors.BOLD}{task.description}{Colors.ENDC}")
         if self.persist and self.last_assistant:
             assistant = self.last_assistant
         else:
@@ -234,13 +251,13 @@ class LocalEngine:
 
         self.last_assistant = selected_assistant
 
-        if isinstance(task, EvaluationTask):
+        if task.evaluate:
             output = assistant.evaluate(self.client, task, plan_log)
             if output:
                 success_flag = output[0] if isinstance(output[0], bool) else output[0].lower() == 'true'
                 message = output[1]
                 if success_flag:
-                    print(f'\n{Colors.OKGREEN}{message}{Colors.ENDC}')
+                    print(f'\n{Colors.WARNING}{message}{Colors.ENDC}')
                 else:
                     print(f"{Colors.RED}{message}{Colors.ENDC}")
                 assistant.add_assistant_message(message)
@@ -313,33 +330,19 @@ class LocalEngine:
             print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
-    def deploy(self, client, test_file_path=None):
+    def deploy(self):
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
-        self.client = client
-        if test_file_path:
-            print("\nTesting the swarm\n\n")
-            self.load_test_tasks(test_file_path)
-            self.initialize_and_display_assistants()
-            self.run_tests()
-            for assistant in self.assistants:
-                if assistant.name == 'user_interface':
-                    assistant.save_conversation(test=True)
-        else:
-            print("\n🐝🐝🐝 Deploying the swarm 🐝🐝🐝\n\n")
-            self.initialize_and_display_assistants()
+        while self.tasks:
+            task = self.tasks.pop(0)
+            print('Task', task.id)
+            self.run_task(task)
             print("\n" + "-" * 100 + "\n")
-            for task in self.tasks:
-                print('Task',task.id)
-                print(f"{Colors.BOLD}Running task{Colors.ENDC}")
-                self.run_task(task)
-                print("\n" + "-" * 100 + "\n")
-            #save the session
-            for assistant in self.assistants:
-                if assistant.name == 'user_interface':
-                    assistant.save_conversation()
-             #assistant.print_conversation()
+        # save the session
+        for assistant in self.assistants:
+            if assistant.name == 'user_interface':
+                assistant.save_conversation()
 
     def load_test_tasks(self, test_file_paths):
         self.tasks = []  # Clear any existing tasks

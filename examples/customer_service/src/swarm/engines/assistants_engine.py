@@ -104,7 +104,7 @@ class AssistantsEngine:
         print('No assistant found')
         return None
 
-    def triage_request(self, message, test_mode):
+    def triage_request(self, message):
         """
         Analyze the user message and delegate it to the appropriate assistant.
         """
@@ -118,8 +118,7 @@ class AssistantsEngine:
             )
             assistant.add_assistant_message('Selected Assistant: '+assistant.name)
             return assistant
-        #else
-        if not test_mode:
+        else:
             print('No assistant found')
         return None
 
@@ -136,7 +135,7 @@ class AssistantsEngine:
         return response.content
 
 
-    def run_request(self, request, assistant,test_mode):
+    def run_request(self, request, assistant):
         """
         Run the request with the selected assistant and monitor its status.
         """
