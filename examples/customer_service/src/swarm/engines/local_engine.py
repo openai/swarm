@@ -149,46 +149,66 @@ class LocalEngine:
         return response.content
 
     def initiate_run(self, task, assistant):
+        """
+        Run the request with the selected assistant and monitor its status.
+        """
         run = Run(assistant, task.description, self.client)
+
+        #Update assistant with current task and run
         assistant.current_task_id = task.id
         assistant.runs.append(run)
+
+
+        #Get planner
         planner = assistant.planner
         plan = run.initiate(planner)
         plan_log = {'step': [], 'step_output': []}
         if not isinstance(plan, list):
             plan_log['step'].append('response')
-            plan_log['step_output'].append(plan)
+            plan_log['step'].append(plan)
             assistant.add_assistant_message(f"Response to user: {plan}")
             print(f"{Colors.HEADER}Response:{Colors.ENDC} {plan}")
+
+            #add global context
+            self.store_context_globally(assistant)
             return plan_log, plan_log
 
         original_plan = plan.copy()
         iterations = 0
-        while plan and iterations < max_iterations:
-            if isinstance(plan, list):
-                step = plan.pop(0)
-                assistant.add_tool_message(step)
-                if step['tool']:
-                    print(step)
-                    print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
-                    if 'human_input' in step and step['human_input']:
-                        print(f"\n{Colors.HEADER}Tool {step['tool']} requires human input:{Colors.ENDC}")
-                        print(f"{Colors.GREY}Tool arguments:{Colors.ENDC} {step['args']}\n")
-                        user_confirmation = input("Type 'yes' to execute tool, anything else to skip: ")
-                        if user_confirmation.lower() != 'yes':
-                            assistant.add_assistant_message(f"Tool {step['tool']} execution skipped by user.")
-                            print(f"{Colors.GREY}Skipping tool execution.{Colors.ENDC}")
-                            plan_log['step'].append('tool_skipped')
-                            plan_log['step_output'].append('Tool execution skipped by user!')
-                            continue
-                    tool_output = self.handle_tool_call(assistant, step)
-                    plan_log['step'].append(step)
-                    plan_log['step_output'].append(tool_output)
-                if task.iterate and not is_dict_empty(plan_log) and plan:
-                    iterations += 1
-                    new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
-                    plan = run.generate_plan(new_task)
-                self.store_context_globally(assistant)
+
+        while plan and iterations< max_iterations:
+            if isinstance(plan,list):
+              step = plan.pop(0)
+            else:
+                return "Error generating plan", "Error generating plan"
+            assistant.add_tool_message(step)
+            human_input_flag = next((tool.human_input for tool in assistant.tools if tool.function.name == step['tool']), False)
+            if step['tool']:
+                print(f"{Colors.HEADER}Running Tool:{Colors.ENDC} {step['tool']}")
+                if human_input_flag:
+                    print(f"\n{Colors.HEADER}Tool {step['tool']} requires human input:{Colors.HEADER}")
+                    print(f"{Colors.GREY}Tool arguments:{Colors.ENDC} {step['args']}\n")
+
+                    user_confirmation = input(f"Type 'yes' to execute tool, anything else to skip: ")
+                    if user_confirmation.lower() != 'yes':
+                        assistant.add_assistant_message(f"Tool {step['tool']} execution skipped by user.")
+                        print(f"{Colors.GREY}Skipping tool execution.{Colors.ENDC}")
+                        plan_log['step'].append('tool_skipped')
+                        plan_log['step_output'].append(f'Tool {step["tool"]} execution skipped by user! Task not completed.')
+                        continue
+                    assistant.add_assistant_message(f"Tool {step['tool']} execution approved by user.")
+            tool_output = self.handle_tool_call(assistant, step)
+            plan_log['step'].append(step)
+            plan_log['step_output'].append(tool_output)
+
+            if task.iterate and not is_dict_empty(plan_log) and plan:
+               iterations += 1
+               new_task = ITERATE_PROMPT.format(task.description, original_plan, plan_log)
+               plan = run.generate_plan(new_task)
+            # Store the output for the next iteration
+
+            self.store_context_globally(assistant)
+
         return original_plan, plan_log
 
     def handle_tool_call(self, assistant, tool_call):
