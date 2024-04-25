@@ -41,5 +41,5 @@ class Swarm:
         self.engine.run_tests()
 
     def add_task(self, task):
-        self.tasks.append(task)
+        self.engine.add_task(task)
 

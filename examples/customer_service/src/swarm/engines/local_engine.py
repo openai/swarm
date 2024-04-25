@@ -73,6 +73,9 @@ class LocalEngine:
                             assistant=task_json.get('assistant', 'user_interface'))
                 self.tasks.append(task)
 
+    def add_task(self,task):
+        self.tasks.append(task)
+
     def initialize(self):
             """
             Loads all assistants and displays their information.
@@ -246,13 +249,13 @@ class LocalEngine:
 
         self.last_assistant = selected_assistant
 
-        if isinstance(task, EvaluationTask):
+        if task.evaluate:
             output = assistant.evaluate(self.client, task, plan_log)
             if output:
                 success_flag = output[0] if isinstance(output[0], bool) else output[0].lower() == 'true'
                 message = output[1]
                 if success_flag:
-                    print(f'\n{Colors.OKGREEN}{message}{Colors.ENDC}')
+                    print(f'\n{Colors.WARNING}{message}{Colors.ENDC}')
                 else:
                     print(f"{Colors.RED}{message}{Colors.ENDC}")
                 assistant.add_assistant_message(message)
@@ -329,16 +332,15 @@ class LocalEngine:
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
-        # print("\n🐝🐝🐝 Deploying the swarm 🐝🐝🐝\n\n")
-        for task in self.tasks:
-            print('Task',task.id)
+        while self.tasks:
+            task = self.tasks.pop(0)
+            print('Task', task.id)
             self.run_task(task)
             print("\n" + "-" * 100 + "\n")
-        #save the session
+        # save the session
         for assistant in self.assistants:
             if assistant.name == 'user_interface':
                 assistant.save_conversation()
-            #assistant.print_conversation()
 
     def load_test_tasks(self, test_file_paths):
         self.tasks = []  # Clear any existing tasks

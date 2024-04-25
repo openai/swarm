@@ -16,18 +16,19 @@ def main():
         test_files = args.test
         test_file_paths = [f"{test_root}/{file}" for file in test_files] if test_files else [f"{test_root}/{test_file}"]
         swarm.run_tests(test_file_paths=test_file_paths)
-
-    elif args.input:
+    else:
         while True:
+            if not args.input:
+                swarm.load_tasks()
+                swarm.deploy()
+
             task_input = input("Enter a task (or 'exit' to quit): ")
             if task_input.lower() == 'exit':
                 break
+
             parsed_args = parse_task_input(task_input)
-            swarm.add_task(parsed_args)
+            swarm.add_task(Task(**parsed_args))
             swarm.deploy()
-    else:
-        swarm.load_tasks()
-        swarm.deploy()
 
 if __name__ == "__main__":
     main()
