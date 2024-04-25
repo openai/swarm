@@ -1,0 +1,18 @@
+[
+  {
+    "description": "Explain the difference between a refund and a return"
+  },
+  {
+    "description": "I want to return my shoes!",
+    "evaluate": true
+  },
+  {
+    "description": "I want to return my shoes! The item_id is 13",
+    "evaluate": true
+  },
+  {
+    "description": "I want a refund! The item_id is 307 and my user_id is 2. Notify me after as well over email",
+    "iterate": true,
+    "evaluate": true
+  }
+]
