@@ -12,22 +12,23 @@ class Swarm:
         self.engine = None
         self.persist = persist
 
-
-    def deploy(self, test_mode=False,test_file_paths=None):
-        """
-        Processes all tasks in the order they are listed in self.tasks.
-        """
+    def initialize(self):
+        """Prepare resources and initialize the environment."""
         client = OpenAI()
-        #Initialize swarm first
         if self.engine_name == 'assistants':
-            print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
-            self.engine = AssistantsEngine(client,self.tasks)
-            self.engine.deploy(client,test_mode,test_file_paths)
+            self.engine = AssistantsEngine(client, self.tasks)
+        elif self.engine_name == 'local':
+            self.engine = LocalEngine(client, self.tasks, persist=self.persist)
+        # Initialize the engine (e.g., load tools, prepare assistants)
+        print("\n🐝🐝🐝 Initializing the swarm 🐝🐝🐝\n\n")
 
-        elif self.engine_name =='local':
-            print(f"{Colors.GREY}Selected engine: Local{Colors.ENDC}")
-            self.engine = LocalEngine(client,self.tasks, persist=self.persist)
-            self.engine.deploy(client,test_mode,test_file_paths)
+        self.engine.initialize()
+
+
+
+    def deploy(self,test_mode=False,test_file_paths=None):
+        print("\nDeploying the swarm\n\n")
+        self.engine.deploy()
 
     def load_tasks(self):
         self.tasks = []
@@ -39,6 +40,23 @@ class Swarm:
                             evaluate=task_json.get('evaluate', False),
                             assistant=task_json.get('assistant', 'user_interface'))
                 self.tasks.append(task)
+
+    def load_test_tasks(self, test_file_paths):
+        self.tasks = []  # Clear any existing tasks
+        for f in test_file_paths:
+            with open(f, 'r') as file:
+                for line in file:
+                    test_case = json.loads(line)
+                    task = EvaluationTask(description=test_case['text'],
+                                assistant=test_case.get('assistant', 'user_interface'),
+                                groundtruth=test_case.get('groundtruth',None),
+                                expected_plan=test_case.get('expected_plan',None),
+                                expected_assistant=test_case['expected_assistant'],
+                                iterate=test_case.get('iterate', False),  # Add this
+                                evaluate=test_case.get('evaluate', False),
+                                eval_function=test_case.get('eval_function', 'default')
+                                )
+                    self.tasks.append(task)
 
     def add_task(self, task):
         self.tasks.append(task)

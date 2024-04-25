@@ -9,8 +9,6 @@ from src.swarm.tool import Tool
 from src.tasks.task import EvaluationTask
 from src.runs.run import Run
 
-
-
 class LocalEngine:
     def __init__(self, client, tasks, persist=False):
         self.client = client
@@ -65,11 +63,12 @@ class LocalEngine:
                 except (IOError, json.JSONDecodeError) as e:
                     print(f"Error loading assistant configuration from {assistant_config_path}: {e}")
 
-
-    def initialize_and_display_assistants(self):
+    def initialize(self):
             """
             Loads all assistants and displays their information.
             """
+            print("\n🐝🐝🐝 Initializing the swarm 🐝🐝🐝\n\n")
+            self.load_tools()
             self.load_all_assistants()
             self.initialize_global_history()
 
@@ -83,7 +82,6 @@ class LocalEngine:
 
 
     def get_assistant(self, assistant_name):
-
         for assistant in self.assistants:
             if assistant.name == assistant_name:
                 return assistant
@@ -350,50 +348,41 @@ class LocalEngine:
             print(f"{Colors.OKGREEN}Passed {assistant_pass} assistant tests out of {total_assistant} tests. Success rate: {assistant_pass / total_assistant * 100}%{Colors.ENDC}\n")
         print("Completed testing the swarm\n\n")
 
+    def process_tasks(self, test_mode=False):
+        """
+        Process all tasks in the order they are listed in self.tasks.
+        """
+        print("\n" + "-" * 100 + "\n")
+        for task in self.tasks:
+            print('Task', task.id)
+            print(f"{Colors.BOLD}Running task{Colors.ENDC}")
+            self.run_task(task, test_mode)
+            print("\n" + "-" * 100 + "\n")
+
+        # Save session if needed
+        for assistant in self.assistants:
+            if assistant.name == 'user_interface':
+                assistant.save_conversation()
+
+        # Clear tasks if not persistent
+        if not self.persist:
+            self.tasks.clear()
+
     def deploy(self, client, test_mode=False, test_file_path=None):
         """
-        Processes all tasks in the order they are listed in self.tasks.
+        This method can be used for initial testing or specific operations that require full reinitialization.
         """
         self.client = client
         if test_mode and test_file_path:
             print("\nTesting the swarm\n\n")
-            self.load_test_tasks(test_file_path)
-            self.initialize_and_display_assistants()
+            self.initialize()
             self.run_tests()
             for assistant in self.assistants:
                 if assistant.name == 'user_interface':
                     assistant.save_conversation(test=True)
         else:
-            print("\n🐝🐝🐝 Deploying the swarm 🐝🐝🐝\n\n")
-            self.initialize_and_display_assistants()
-            print("\n" + "-" * 100 + "\n")
-            for task in self.tasks:
-                print('Task',task.id)
-                print(f"{Colors.BOLD}Running task{Colors.ENDC}")
-                self.run_task(task, test_mode)
-                print("\n" + "-" * 100 + "\n")
-            #save the session
-            for assistant in self.assistants:
-                if assistant.name == 'user_interface':
-                    assistant.save_conversation()
-             #assistant.print_conversation()
-
-    def load_test_tasks(self, test_file_paths):
-        self.tasks = []  # Clear any existing tasks
-        for f in test_file_paths:
-            with open(f, 'r') as file:
-                for line in file:
-                    test_case = json.loads(line)
-                    task = EvaluationTask(description=test_case['text'],
-                                assistant=test_case.get('assistant', 'user_interface'),
-                                groundtruth=test_case.get('groundtruth',None),
-                                expected_plan=test_case.get('expected_plan',None),
-                                expected_assistant=test_case['expected_assistant'],
-                                iterate=test_case.get('iterate', False),  # Add this
-                                evaluate=test_case.get('evaluate', False),
-                                eval_function=test_case.get('eval_function', 'default')
-                                )
-                    self.tasks.append(task)
+            self.initialize()
+            self.process_tasks(test_mode)
 
     def store_context_globally(self, assistant):
         self.global_context['history'].append({assistant.name:assistant.context['history']})

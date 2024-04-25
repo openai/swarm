@@ -1,11 +1,9 @@
-import shlex
 import argparse
 from src.swarm.swarm import Swarm
 from src.tasks.task import Task
 from configs.general import test_root, test_file, engine_name, persist
 from src.validator import validate_all_tools, validate_all_assistants
-from src.arg_parser import parse_args
-
+from src.arg_parser import parse_args, parse_task_input
 
 def main():
     args = parse_args()
@@ -17,6 +15,7 @@ def main():
 
     swarm = Swarm(
         engine_name=engine_name, persist=persist)
+    swarm.initialize()  # Initialize the engine
 
     if args.test is not None:
         test_files = args.test
@@ -24,8 +23,8 @@ def main():
             test_file_paths = [f"{test_root}/{test_file}"]
         else:
             test_file_paths = [f"{test_root}/{file}" for file in test_files]
-        swarm = Swarm(engine_name='local')
-        swarm.deploy(test_mode=True, test_file_paths=test_file_paths)
+        swarm.load_test_tasks(test_file_paths=test_file_paths)
+        swarm.deploy(test_mode=True)
 
     elif args.input:
         # Interactive mode for adding tasks
@@ -37,27 +36,15 @@ def main():
             if task_input.lower() == 'exit':
                 break
 
-            # Use shlex to parse the task description and arguments
-            task_args = shlex.split(task_input)
-            task_parser = argparse.ArgumentParser()
-            task_parser.add_argument("description", type=str, nargs='?', default="")
-            task_parser.add_argument("--iterate", action="store_true", help="Set the iterate flag for the new task.")
-            task_parser.add_argument("--evaluate", action="store_true", help="Set the evaluate flag for the new task.")
-            task_parser.add_argument("--assistant", type=str, default="user_interface", help="Specify the assistant for the new task.")
-
-            # Parse task arguments
-            task_parsed_args = task_parser.parse_args(task_args)
-
-            # Create and add the new task
-            new_task = Task(description=task_parsed_args.description,
-                            iterate=task_parsed_args.iterate,
-                            evaluate=task_parsed_args.evaluate,
-                            assistant=task_parsed_args.assistant)
+            parsed_args = parse_task_input(task_input)
+            new_task = Task(description=parsed_args['description'],
+                            iterate=parsed_args['iterate'],
+                            evaluate=parsed_args['evaluate'],
+                            assistant=parsed_args['assistant'])
             swarm.add_task(new_task)
 
             # Deploy Swarm with the new task
             swarm.deploy()
-            swarm.tasks.clear()
 
     else:
         # Load predefined tasks if any

@@ -1,2 +1,0 @@
-{"text": "How many days in a week?", "groundtruth":"7", "expected_assistant": "user_interface", "eval_function": "numeric"}
-{"text": "What is the name of the US President?", "groundtruth":"Joe Biden", "expected_assistant": "user_interface", "eval_function": "name"}

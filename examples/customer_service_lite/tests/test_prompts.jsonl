@@ -1,4 +1,0 @@
-{"text": "Explain the DALL-E editor interface?", "expected_assistant": "user_interface"}
-{"text": "How does the OpenAI moderation API work?", "expected_assistant": "user_interface"}
-{"text": "How many slices of pizza would everyone get if you split 12 slices equally among 3 people","groundtruth": "4", "expected_assistant": "user_interface"}
-{"text": "Are users allowed to change DALL-E email from what they signed up with?", "expected_plan":[{"tool": "query_docs", "args": {"query": "Are users allowed to change DALL-E email from what they signed up with?"}}], "expected_assistant": "user_interface"}
