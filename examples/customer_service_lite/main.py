@@ -25,7 +25,7 @@ def main():
         else:
             test_file_paths = [f"{test_root}/{file}" for file in test_files]
         swarm = Swarm(engine_name='local')
-        swarm.deploy(test_mode=True, test_file_paths=test_file_paths)
+        swarm.deploy(test_file_paths=test_file_paths)
 
     elif args.input:
         # Interactive mode for adding tasks
