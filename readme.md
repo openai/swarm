@@ -85,7 +85,7 @@ Check out `/examples` for inspiration! Learn more about each one in its README.
 
 ## Running Swarm
 
-Start by instancaiting a Swarm client (which internally just instanciates an `OpenAI` client).
+Start by instanciating a Swarm client (which internally just instanciates an `OpenAI` client).
 
 ```python
 from swarm import Swarm
