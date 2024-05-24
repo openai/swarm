@@ -278,7 +278,7 @@ Sales Assistant
 ```
 
 > [!NOTE]
-> If an `Assistant` tries to hand-off to multiple `Assistant`s, the last one will be used.
+> If an `Assistant` calls multiple functions to hand-off to an `Assistant`, only the last handoff function will be used.
 
 #### Function Schemas
 
