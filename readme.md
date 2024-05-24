@@ -70,7 +70,7 @@ A Swarm `Assistant` can:
 These primitives are powerful enough to express rich dynamics between tools and networks of assistants, allowing you to build scalable, real-world solutions while avoiding a steep learning curve.
 
 > [!NOTE]
-> Swarm Assistants are not related to Assistants in the Assistants API. They are named similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API and is hence stateless between calls. 
+> Swarm Assistants are not related to Assistants in the Assistants API. They are named similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API and is hence stateless between calls.
 
 ## Why Swarm
 
@@ -225,11 +225,10 @@ An `Assistant` can hand off to another `Assistant` by returning it in a `functio
 ```python
 sales_assistant = Assistant(name="Sales Assistant")
 
-def talk_to_sales():
-   print("Hello, World!")
-   return "Done"
+def transfer_to_sales():
+   return sales_assistant
 
-assistant = Assistant(functions=[talk_to_sales])
+assistant = Assistant(functions=[transfer_to_sales])
 
 response = client.run(assistant, [{"role":"user", "content":"Transfer me to sales."}])
 print(response.assistant.name)
