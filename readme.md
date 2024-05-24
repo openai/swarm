@@ -4,6 +4,8 @@
 
 A lightweight, stateless multi-assistant orchestration framework.
 
+## Install
+
 ```shell
 pip install git+ssh://git@github.com/openai/swarm.git
 ```
@@ -55,7 +57,6 @@ What can I assist?
   - [Streaming](#streaming)
 - [Evaluations](#evaluations)
 - [Utils](#utils)
-## Install
 
 # Overview
 
