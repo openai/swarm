@@ -59,7 +59,7 @@ What can I assist?
 
 # Overview
 
-Swarm focuses on making assistant **coordination** and **execution** lightweight, highly controllable, and easily testable. It accomplishes this by introudcing a single new, yet familiar, primitive: an `Assistant`.
+Swarm focuses on making assistant **coordination** and **execution** lightweight, highly controllable, and easily testable. It accomplishes this by introducing a single new, yet familiar, primitive: an `Assistant`.
 
 A Swarm `Assistant` can:
 
@@ -95,7 +95,7 @@ Check out `/examples` for inspiration! Learn more about each one in its README.
 
 ## Running Swarm
 
-Start by instanciating a Swarm client (which internally just instanciates an `OpenAI` client).
+Start by instantiating a Swarm client (which internally just instantiates an `OpenAI` client).
 
 ```python
 from swarm import Swarm
@@ -107,7 +107,7 @@ client = Swarm()
 
 Swarm's `run()` function is analogous to the `chat.completions.create()` function in the Chat Completions API – it takes `messages` and returns `messages` and saves no state between calls. Importantly, however, it also handles Assistant function execution, hand-offs, context variable references, and can take multiple turns before returning to the user.
 
-At it's core, Swarm's `client.run()` implements the following loop:
+At its core, Swarm's `client.run()` implements the following loop:
 
 1. Get a completion from the current Assistant
 2. Execute tool calls and append results
@@ -140,7 +140,7 @@ Once `client.run()` is finished (after potentially multiple calls to assistants 
 
 ## Assistants
 
-An `Assistant` simply encapsulates a set of `instructions` with a set of `functions` (plus some additional settings below), and has the capability to hand off execution to other another `Assistant`.
+An `Assistant` simply encapsulates a set of `instructions` with a set of `functions` (plus some additional settings below), and has the capability to hand off execution to another `Assistant`.
 
 While it's tempting to personify an `Assistant` as "someone who does X", it can also be used to represent a very specific workflow or step defined by a set of `instructions` and `functions` (e.g. a set of steps, a complex retrieval, single step of data transformation, etc). This allows `Assistant`s to be composed into a network of "agents", "workflows", and "tasks", all represented by the same primitive.
 
@@ -333,10 +333,10 @@ Uses the same events as [Chat Completions API streaming](https://platform.openai
 Two new event types have been added:
 
 - `{"delim":"start"}` and `{"delim":"start"}`, to signal each time an `Assistant` handles a single message (response or function call). This helps identify switches between `Assistant`s.
-- `{"response": Response}` will return a `Response` object at the end of a stream with the aggregated (complete) resopnse, for convenience.
+- `{"response": Response}` will return a `Response` object at the end of a stream with the aggregated (complete) response, for convenience.
 
 # Evaluations
-Evaluations are crucial to any project, and we encourage developers to bring their own eval suites to test the performance of their swarms. For reference, we have some examples for how to eval swarm in the `airline`, `weather_assitant` and `triage_assistant` quickstart examples. See the READMEs for more details.
+Evaluations are crucial to any project, and we encourage developers to bring their own eval suites to test the performance of their swarms. For reference, we have some examples for how to eval swarm in the `airline`, `weather_assistant` and `triage_assistant` quickstart examples. See the READMEs for more details.
 
 # Utils
 
