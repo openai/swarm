@@ -1,0 +1,7 @@
+version: '3.4'
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.3.0
+    restart: on-failure
+    ports:
+      - "6335:6335"

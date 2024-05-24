@@ -1,0 +1,422 @@
+[
+    {
+        "id": "79ce787f-806c-4c0d-b6fc-4a4bc472229f",
+        "timestamp": "2024-05-15T09:24:50.264546",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "My bag was not delivered!"
+                    }
+                ],
+                "expected_function": "transfer_to_lost_baggage",
+                "actual_function": [
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I had some turbulence on my flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "Could you please specify what kind of assistance you need regarding the turbulence you experienced on your flight?",
+                    "How can I assist you regarding the turbulence on your flight?",
+                    "Could you specify if this concern is regarding a past flight, or are you currently experiencing turbulence and seeking assistance?",
+                    "Could you clarify if you need assistance related to ongoing travel disruptions or if this is a feedback/complaint about the experience on your flight?",
+                    "Could you clarify if you need assistance related to any issues that occurred as a result of the turbulence, such as feeling unwell, damage to belongings, or other concerns?"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight please"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_modification",
+                "actual_function": [
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What is the meaning of life"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I'm here to help with flight-related inquiries. How can I assist you with your upcoming flight or another travel-related issue?",
+                    "I'm here to help with specific requests related to your flight and related services. How can I assist you with your upcoming trip or any other travel-related queries?",
+                    "I'm here to help with more direct assistance regarding your flight and travel needs. How can I assist you with your upcoming flight or any related service?",
+                    "I can help better with inquiries related to your upcoming flight or other travel-related requests. Do you have any specific questions regarding your travel?",
+                    "I'm here to help with specific inquiries about your flight and related services. Is there anything else I can assist you with today?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 20,
+        "total_evals": 20,
+        "overall_accuracy_percent": "100.00%"
+    },
+    {
+        "id": "a568f282-fea0-4d3e-9f3c-7d7c6b8c5d1b",
+        "timestamp": "2024-05-15T09:33:55.213364",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "My bag was not delivered!"
+                    }
+                ],
+                "expected_function": "transfer_to_lost_baggage",
+                "actual_function": [
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I had some turbulence on my flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "Are you looking to modify your flight, or is it regarding lost baggage?",
+                    "Got it. Are you looking to modify your flight or report lost baggage as a result?",
+                    "Do you need to modify your flight or report lost baggage?",
+                    "I apologize for the inconvenience you experienced. Are you looking to make changes to your flight, or is there a specific issue like lost baggage you'd like to address?",
+                    "Are you looking to file a complaint or seek compensation for your experience?"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight please"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_modification",
+                "actual_function": [
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What is the meaning of life"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "For questions about philosophy or the meaning of life, I'd recommend reaching out to a philosopher or engaging in thoughtful discussions with friends and family to explore different perspectives. \n\nIs there anything related to your flight or account that I can help with?",
+                    "I'm here to help with requests related to your customer account or travel plans. How can I assist you today?",
+                    "How can I assist you with your flight, account, or any travel-related issues today?",
+                    "That sounds profound. Is there something specific you're looking for assistance with, such as your flight information or any issues related to your travel?",
+                    "I'm here to help with flight-related services or issues. Is there anything specific I can assist you with regarding your upcoming flight or any other service?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 20,
+        "total_evals": 20,
+        "overall_accuracy_percent": "100.00%"
+    },
+    {
+        "id": "349feed6-6dfe-4b78-bfe7-9949aa044c10",
+        "timestamp": "2024-05-15T09:34:28.025291",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "My bag was not delivered!"
+                    }
+                ],
+                "expected_function": "transfer_to_lost_baggage",
+                "actual_function": [
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I had some turbulence on my flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "We apologize for any inconvenience caused. Are you looking to modify your flight or report an issue with lost baggage?",
+                    "Do you need assistance with a flight modification or lost baggage related to it?",
+                    "Do you need to modify your flight or report a lost baggage issue?",
+                    "Are you looking to modify your flight or report lost baggage?",
+                    "I apologize for the turbulence you experienced. Could you please tell me if you need assistance related to modifying your flight or if you have any concerns about lost baggage?"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight please"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_modification",
+                "actual_function": [
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What is the meaning of life"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I can help with specific requests regarding your account or flight. Is there something specific you need assistance with?",
+                    "That\u2019s a profound question! How can I assist you with your flight booking or any travel-related issues today?",
+                    "That\u2019s a profound question! How can I assist you with your flight or other travel-related matters today?",
+                    "What specific information about the meaning of life are you looking for?",
+                    "I can assist with airline-related inquiries. Do you have any questions about your flight or other services?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 20,
+        "total_evals": 20,
+        "overall_accuracy_percent": "100.00%"
+    },
+    {
+        "id": "4588e553-01f9-41d5-8ce4-a40ee72d0788",
+        "timestamp": "2024-05-15T09:35:10.554399",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "My bag was not delivered!"
+                    }
+                ],
+                "expected_function": "transfer_to_lost_baggage",
+                "actual_function": [
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage",
+                    "transfer_to_lost_baggage"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I had some turbulence on my flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "Are you looking for assistance with a complaint about your recent experience, or do you require help with something related to your flight?",
+                    "Are you looking to modify your flight booking or report an issue with lost baggage?",
+                    "Are you looking to modify your flight or report a lost baggage issue related to the turbulence?",
+                    "I'm sorry to hear about your experience. Could you please specify what issue you need assistance with?",
+                    "Would you like to modify your flight or report any lost baggage?"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight please"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_modification",
+                "actual_function": [
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification",
+                    "transfer_to_flight_modification"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What is the meaning of life"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I'm here to assist with your travel-related inquiries or issues. Could you please let me know what you need help with regarding your flight or travel plans?",
+                    "That's a profound question! How can I assist you with your flight or baggage today?",
+                    "I'm here to assist you with specific requests or issues you may have. How can I assist you today with your travel plans or account?",
+                    "I'm here to assist with your specific needs. Do you have any requests or issues regarding flights or baggage?",
+                    "Do you need assistance with your upcoming flight or do you have a lost baggage issue?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 20,
+        "total_evals": 20,
+        "overall_accuracy_percent": "100.00%"
+    }
+]

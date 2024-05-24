@@ -1,0 +1,343 @@
+Metadata-Version: 2.1
+Name: swarm
+Version: 0.1.0
+Summary: A lightweight, stateless multi-agent orchestration framework.
+Author: OpenAI Solutions
+Author-email: solutions@openai.com
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: openai
+Requires-Dist: pytest
+Requires-Dist: requests
+Requires-Dist: tqdm
+Requires-Dist: pre-commit
+Requires-Dist: instructor
+
+![Swarm Logo](https://github.com/openai/swarm-core/assets/25421602/a1961113-e3b5-4341-9208-665a5e7959ee)
+
+A lightweight, stateless multi-assistant orchestration framework.
+
+```python
+from swarm import Swarm, Assistant
+
+client = Swarm()
+
+def transfer_to_assistant_b():
+    return assistant_b
+
+
+assistant_a = Assistant(
+    name="Assistant A",
+    instructions="You are a helpful assistant.",
+    functions=[transfer_to_assistant_b],
+)
+
+assistant_b = Assistant(
+    name="Assistant B",
+    instructions="Only speak in Haikus.",
+)
+
+response = client.run(
+    assistant=assistant_a,
+    messages=[{"role": "user", "content": "I want to talk to assistant B."}],
+)
+
+print(response.messages[-1]["content"])
+```
+
+```
+Hope glimmers brightly,
+New paths converge gracefully,
+What can I assist?
+```
+
+# Table of Contents
+
+- [Overview](#overview)
+- [Setup](#setup)
+- [Why Swarm](#why-swarm)
+- [Documentation](#documentation)
+- [Quickstart](#quickstart)
+
+# Overview
+
+Swarm focuses on making assistant **coordination** and **execution** lightweight, highly controllable, and easily testable. It accomplishes this by introudcing a single new, yet familiar, primitive: an `Assistant`.
+
+A Swarm `Assistant` can:
+
+- Execute tools and take multiple steps
+- Read/write context variables in its instructions and functions
+- Hand off a conversation to another `Assistant`
+
+These primitives are powerful enough to express rich dynamics between tools and networks of assistants, allowing you to build scalable, real-world solutions while avoiding a steep learning curve.
+
+> [!NOTE]  
+> Swarm Assistants are not related to Assistants in the Assistants API. They are defined similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API.
+
+# Setup
+
+```shell
+#TODO make this swarm.git when we roll out
+git clone git@github.com:openai/swarm-core.git
+cd swarm-core
+pip install -e .
+```
+
+# Why Swarm
+
+Swarm is lightweight, scalable, and highly customizable by design. It is best suited for situations dealing with a large number of independent capabilities and instructions that are difficult to encode into a single prompt.
+
+Unlike the Assistants API, which enables hosted threads and memory management, Swarm runs (almost) entirely on the client and, much like the Chat Completions API, does not store state between calls. This gives developers transparency and fine-grained control over context, steps, and tool calls.
+
+# Documentation
+
+![Swarm Diagram](assets/diagram.png)
+
+## Running Swarm
+
+```python
+from swarm import Swarm
+
+client = Swarm()
+
+response = client.run(...)
+```
+
+### `run` Parameters
+
+| Parameter             | Type        | Description                                                                       | Default        |
+| --------------------- | ----------- | --------------------------------------------------------------------------------- | -------------- |
+| **assistant**         | `Assistant` | The assistant instance that will handle the conversation.                         | (required)     |
+| **messages**          | `List`      | A list of message objects that form the conversation history.                     | (required)     |
+| **context_variables** | `dict`      | A dictionary of additional context variables to be used during the run.           | `{}`           |
+| **model_override**    | `str`       | An optional string to override the default model being used.                      | `None`         |
+| **stream**            | `bool`      | If `True`, enables streaming responses.                                           | `False`        |
+| **debug**             | `bool`      | If `True`, enables debug mode which provides detailed logs and outputs.           | `False`        |
+| **max_turns**         | `int`       | The maximum number of conversational turns allowed.                               | `float("inf")` |
+| **execute_tools**     | `bool`      | If `True`, enables the execution of additional tools or functions during the run. | `True`         |
+
+### `Response` Fields
+
+| Field                 | Type        | Description                                                     |
+| --------------------- | ----------- | --------------------------------------------------------------- |
+| **messages**          | `List`      | A list of message objects generated during the conversation.    |
+| **assistant**         | `Assistant` | The assistant instance that processed the messages.             |
+| **context_variables** | `dict`      | A dictionary of context variables used during the conversation. |
+
+```python
+messages = []
+assistant = my_assistant
+while True:
+    user_input = input("> ")
+    messages.append({"role": "user", "content": user_input})
+
+    response = client.run(assistant=assistant, messages=messages)
+    messages = response.messages
+    assistant = response.assistant
+    pretty_print_messages(messages)
+```
+
+## Assistants
+
+### `Assistant` Fields
+
+| Field            | Type                     | Description                                                                       | Default                          |
+| ---------------- | ------------------------ | --------------------------------------------------------------------------------- | -------------------------------- |
+| **name**         | `str`                    | The name of the assistant.                                                        | `"Assistant"`                    |
+| **model**        | `str`                    | The model to be used by the assistant.                                            | `"gpt-4o"`                       |
+| **instructions** | `str` or `func() -> str` | Instructions for the assistant, can be a string or a callable returning a string. | `"You are a helpful assistant."` |
+| **functions**    | `List`                   | A list of functions that the assistant can call.                                  | `[]`                             |
+| **tool_choice**  | `str`                    | The tool choice for the assistant, if any.                                        | `None`                           |
+
+## Functions
+
+WIP
+
+## Streaming
+
+WIP
+
+## Usage
+
+TODO: delete usage section, build into docs above and link to examples instead
+
+```python
+import swarm
+from swarm import Assistant
+
+
+assistant = Assistant(
+   name="Assistant",
+   instructions="You are a helpful assistant.",
+   model="gpt-4-turbo",
+)
+
+
+messages = [{"role": "user", "content": "Hi!"}]
+response = swarm.run(assistant, messages)
+
+
+print(response.messages[-1]["content"])
+```
+
+```
+Hello! How can I assist you today?
+```
+
+### Function Calling
+
+```python
+import swarm
+from swarm import Assistant
+
+
+
+def get_weather(location):
+   return "{'temp':67, 'unit':'F'}"
+
+
+
+
+assistant = Assistant(
+   name="Assistant",
+   instructions="You are a helpful assistant.",
+   functions=[get_weather],
+)
+
+
+messages = [{"role": "user", "content": "What's the weather in NYC?"}]
+response = swarm.run(assistant=assistant, messages=messages)
+
+
+print(response.messages[-1]["content"])
+```
+
+```
+The current temperature in New York City is 67°F.
+```
+
+### Assistant Handoffs
+
+```python
+import swarm
+from swarm import Assistant
+
+
+
+
+assistant = Assistant(
+   name="English Assistant",
+   instructions="You only speak English.",
+)
+
+
+spanish_assistant = Assistant(
+   name="Spanish Assistant",
+   instructions="You only speak Spanish.",
+)
+
+
+
+
+def transfer_to_spanish_assistant(location):
+   """Transfer spanish speaking users immediately."""
+   return spanish_assistant
+
+
+
+
+assistant.functions.append(transfer_to_spanish_assistant)
+
+
+messages = [{"role": "user", "content": "Hola. ¿Como estás?"}]
+response = swarm.run(assistant=assistant, messages=messages)
+
+
+print(response.messages[-1]["content"])
+```
+
+```
+¡Hola! Estoy bien, gracias. ¿Y tú cómo estás? ¿En qué puedo ayudarte hoy?
+```
+
+### Context
+
+```python
+import swarm
+from swarm import Assistant
+def instructions(context):
+   return "You are a helpful assistant. Greet the user by name ({name}).".format(
+       **context
+   )
+
+assistant = Assistant(
+   name="Assistant",
+   instructions=instructions,
+)
+
+
+messages = [{"role": "user", "content": "Hi!"}]
+response = swarm.run(
+   messages=messages,
+   assistant=assistant,
+   context={"name": "James"},
+)
+
+
+print(response.messages[-1]["content"])
+```
+
+```
+Hello James! How can I assist you today?
+```
+
+### Important Types/Params
+
+(will add more here, this is a dump for now)
+
+```python
+
+
+AssistantFunction = Callable[[], Union[str, "Assistant", dict]]
+AssistantContext = dict[str, str]
+
+
+class Assistant(BaseModel):
+   name: str = "Assistant"
+   model: str = "gpt-4-turbo"
+   instructions: Union[str, Callable[[], str]] = "You are a helpful assistant."
+   functions: List[AssistantFunction] = []
+   tool_choice: str = None
+
+
+
+
+class Response(BaseModel):
+   messages: List
+   assistant: Assistant
+   context: AssistantContext
+
+
+def run(
+   assistant: Assistant,
+   messages: List,
+   context: dict = {},
+   model_override: str = None,
+   debug: bool = False,
+   max_turns: int = float("inf"),
+   execute_tools: bool = True,
+) -> Response:
+```
+
+## Quickstart
+
+We have several quickstart examples to demonstrate Swarm functionality, and give some inspiration on how you can build with Swarm. Each example has an associated README with more details!
+
+1. [Airline](./examples/airline/) A multi-assistant setup for handling different customer service requests in an airline context
+2. [Basic](./examples/basic/) These examples show the most basic implementations of Swarm
+3. [Support Bot](./examples/support_bot/) A customer service bot which includes a user interface assistant and a help center assistant with several tools
+4. [Triage Assistant](./examples/triage_assistant/) A Swarm demonstrating how to create a triage assistant to delegate tasks to other assistants
+5. [Weather Assistant](./examples/weather_assistant/) A simple Swarm that uses function calling
+6. [Personal shopper](./examples/personal_shopper/) A personal shopping assistant that can help with making sales and refunding orders

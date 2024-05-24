@@ -1,0 +1,3 @@
+[console_scripts]
+instructor=instructor.cli.cli:app
+
