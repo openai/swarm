@@ -70,7 +70,7 @@ A Swarm `Assistant` can:
 These primitives are powerful enough to express rich dynamics between tools and networks of assistants, allowing you to build scalable, real-world solutions while avoiding a steep learning curve.
 
 > [!NOTE]
-> Swarm Assistants are not related to Assistants in the Assistants API. They are defined similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API.
+> Swarm Assistants are not related to Assistants in the Assistants API. They are named similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API and is hence stateless between calls. 
 
 ## Why Swarm
 
