@@ -4,28 +4,6 @@
 
 A lightweight, stateless multi-assistant orchestration framework.
 
-## Table of Contents
-
-- [Install](#install)
-- [Usage](#usage)
-- [Overview](#overview)
-- [Why Swarm](#why-swarm)
-- [Examples](#examples)
-- [Documentation](#documentation)
-  - [Running Swarm](#running-swarm)
-      - [Arguments](#arguments)
-      - [Response Fields](#response-fields)
-  - [Assistants](#assistants)
-    - [Assistant Fields](#assistant-fields)
-    - [Instructions](#instructions)
-    - [Functions](#functions)
-      - [Handoffs and Updating Context Variables](#handoffs-and-updating-context-variables)
-      - [Function Schemas](#function-schemas)
-    - [Streaming](#streaming)
-  - [Evaluations](#evaluations)
-  - [Utils](#utils)
-## Install
-
 ```shell
 pip install git+ssh://git@github.com/openai/swarm.git
 ```
@@ -66,6 +44,19 @@ New paths converge gracefully,
 What can I assist?
 ```
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Examples](#examples)
+- [Documentation](#documentation)
+  - [Running Swarm](#running-swarm)
+  - [Assistants](#assistants)
+  - [Functions](#functions)
+  - [Streaming](#streaming)
+- [Evaluations](#evaluations)
+- [Utils](#utils)
+## Install
+
 # Overview
 
 Swarm focuses on making assistant **coordination** and **execution** lightweight, highly controllable, and easily testable. It accomplishes this by introudcing a single new, yet familiar, primitive: an `Assistant`.
@@ -81,7 +72,7 @@ These primitives are powerful enough to express rich dynamics between tools and 
 > [!NOTE]
 > Swarm Assistants are not related to Assistants in the Assistants API. They are defined similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API.
 
-# Why Swarm
+## Why Swarm
 
 Swarm is lightweight, scalable, and highly customizable by design. It is best suited for situations dealing with a large number of independent capabilities and instructions that are difficult to encode into a single prompt.
 
@@ -153,7 +144,7 @@ An `Assistant` simply encapsulates a set of `instructions` with a set of `functi
 
 While it's tempting to personify an `Assistant` as "someone who does X", it can also be used to represent a very specific workflow or step defined by a set of `instructions` and `functions` (e.g. a set of steps, a complex retrieval, single step of data transformation, etc). This allows `Assistant`s to be composed into a network of "agents", "workflows", and "tasks", all represented by the same primitive.
 
-### `Assistant` Fields
+## `Assistant` Fields
 
 | Field            | Type                     | Description                                                                       | Default                          |
 | ---------------- | ------------------------ | --------------------------------------------------------------------------------- | -------------------------------- |
@@ -195,7 +186,7 @@ print(response.messages[-1]["content"])
 Hi John, how can I assist you today?
 ```
 
-### Functions
+## Functions
 
 - Swarm `Assistant`s can call python functions directly.
 - Function should usually return a `str` (values will be attempted to be cast as a `str`).
@@ -227,7 +218,7 @@ Hola, John!
 - If an `Assistant` function call has an error (missing function, wrong argument, error) an error response will be appended to the chat so the `Assistant` can recover gracefully.
 - If multiple functions are called by the `Assistant`, they will be executed in that order.
 
-#### Handoffs and Updating Context Variables
+### Handoffs and Updating Context Variables
 
 An `Assistant` can hand off to another `Assistant` by returning it in a `function`.
 
@@ -280,7 +271,7 @@ Sales Assistant
 > [!NOTE]
 > If an `Assistant` calls multiple functions to hand-off to an `Assistant`, only the last handoff function will be used.
 
-#### Function Schemas
+### Function Schemas
 
 Swarm automatically converts functions into a JSON Schema that is passed into Chat Completions `tools`.
 
@@ -329,7 +320,7 @@ def greet(name, age: int, location: str = "New York"):
 }
 ```
 
-### Streaming
+## Streaming
 
 ```python
 stream = client.run(assistant, messages, stream=True)
@@ -344,10 +335,10 @@ Two new event types have been added:
 - `{"delim":"start"}` and `{"delim":"start"}`, to signal each time an `Assistant` handles a single message (response or function call). This helps identify switches between `Assistant`s.
 - `{"response": Response}` will return a `Response` object at the end of a stream with the aggregated (complete) resopnse, for convenience.
 
-## Evaluations
+# Evaluations
 Evaluations are crucial to any project, and we encourage developers to bring their own eval suites to test the performance of their swarms. For reference, we have some examples for how to eval swarm in the `airline`, `weather_assitant` and `triage_assistant` quickstart examples. See the READMEs for more details.
 
-## Utils
+# Utils
 
 Use the `run_demo_loop` to test out your swarm! This will run a REPL on your command line. Supports streaming.
 
