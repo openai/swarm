@@ -4,11 +4,30 @@
 
 A lightweight, stateless multi-assistant orchestration framework.
 
+## Table of Contents
+
+- [Install](#install)
+- [Usage](#usage)
+- [Overview](#overview)
+- [Why Swarm](#why-swarm)
+- [Examples](#examples)
+- [Documentation](#documentation)
+  - [Running Swarm](#running-swarm)
+      - [Arguments](#arguments)
+      - [Response Fields](#response-fields)
+  - [Assistants](#assistants)
+    - [Assistant Fields](#assistant-fields)
+    - [Instructions](#instructions)
+    - [Functions](#functions)
+      - [Handoffs and Updating Context Variables](#handoffs-and-updating-context-variables)
+      - [Function Schemas](#function-schemas)
+    - [Streaming](#streaming)
+  - [Evaluations](#evaluations)
+  - [Utils](#utils)
 ## Install
 
 ```shell
-#TODO make this swarm.git when we roll out
-pip install git+ssh://git@github.com/openai/swarm-core.git
+pip install git+ssh://git@github.com/openai/swarm.git
 ```
 
 ## Usage
@@ -59,25 +78,25 @@ A Swarm `Assistant` can:
 
 These primitives are powerful enough to express rich dynamics between tools and networks of assistants, allowing you to build scalable, real-world solutions while avoiding a steep learning curve.
 
-> [!NOTE]  
+> [!NOTE]
 > Swarm Assistants are not related to Assistants in the Assistants API. They are defined similarly for convenience, but are otherwise completely unrelated. Swarm is entirely powered by the Chat Completions API.
 
 # Why Swarm
 
 Swarm is lightweight, scalable, and highly customizable by design. It is best suited for situations dealing with a large number of independent capabilities and instructions that are difficult to encode into a single prompt.
 
-Unlike the Assistants API, which enables hosted threads and memory management, Swarm runs (almost) entirely on the client and, much like the Chat Completions API, does not store state between calls. This gives developers transparency and fine-grained control over context, steps, and tool calls.
+The Assistants API is a great option for developers looking for fully-hosted threads and built in memory management and retrieval. However, Swarm is optimal for developers who want full transparency and fine-grained control over context, steps, and tool calls. Swarm runs (almost) entirely on the client and, much like the Chat Completions API, does not store state between calls.
 
 # Examples
 
 Check out `/examples` for inspiration! Learn more about each one in its README.
 
-- `basic`: Simple examples of fundamentals like setup, function calling, handoffs, and context variables
-- `triage_assistant`: Simple example of setting up a basic triage step to hand off to the right assistant
-- `weather_assistant`: Simple example of function calling
-- `airline`: A multi-assistant setup for handling different customer service requests in an airline context
-- `support_bot`: A customer service bot which includes a user interface assistant and a help center assistant with several tools
-- `personal_shopper`: A personal shopping assistant that can help with making sales and refunding orders
+- [`basic`](examples/basic): Simple examples of fundamentals like setup, function calling, handoffs, and context variables
+- [`triage_assistant`](examples/triage_assistant): Simple example of setting up a basic triage step to hand off to the right assistant
+- [`weather_assistant`](examples/weather_assistant): Simple example of function calling
+- [`airline`](examples/airline): A multi-assistant setup for handling different customer service requests in an airline context.
+- [`support_bot`](examples/support_bot): A customer service bot which includes a user interface assistant and a help center assistant with several tools
+- [`personal_shopper`](examples/personal_shopper): A personal shopping assistant that can help with making sales and refunding orders
 
 # Documentation
 
@@ -130,7 +149,7 @@ Once `client.run()` is finished (after potentially multiple calls to assistants 
 
 ## Assistants
 
-An `Assistant` simply encapsulates a set of `instructions` with a set of `functions` (plus some additional settings below), and has the capability to hand off execution to other another `Assistant`. 
+An `Assistant` simply encapsulates a set of `instructions` with a set of `functions` (plus some additional settings below), and has the capability to hand off execution to other another `Assistant`.
 
 While it's tempting to personify an `Assistant` as "someone who does X", it can also be used to represent a very specific workflow or step defined by a set of `instructions` and `functions` (e.g. a set of steps, a complex retrieval, single step of data transformation, etc). This allows `Assistant`s to be composed into a network of "agents", "workflows", and "tasks", all represented by the same primitive.
 
@@ -268,7 +287,7 @@ Swarm automatically converts functions into a JSON Schema that is passed into Ch
 - Docstrings are turned into the function `description`.
 - Parameters without default values are set to `required`.
 - Type hints are mapped to the parameter's `type` (and default to `string`).
-- Per-parameter descriptions are not explicitly supported, but should work similarly if just added in the docstring. (In the future Google-style docstring argument parsing may be added.)
+- Per-parameter descriptions are not explicitly supported, but should work similarly if just added in the docstring. (In the future docstring argument parsing may be added.)
 
 ```python
 def greet(name, age: int, location: str = "New York"):
@@ -324,6 +343,9 @@ Two new event types have been added:
 
 - `{"delim":"start"}` and `{"delim":"start"}`, to signal each time an `Assistant` handles a single message (response or function call). This helps identify switches between `Assistant`s.
 - `{"response": Response}` will return a `Response` object at the end of a stream with the aggregated (complete) resopnse, for convenience.
+
+## Evaluations
+Evaluations are crucial to any project, and we encourage developers to bring their own eval suites to test the performance of their swarms. For reference, we have some examples for how to eval swarm in the `airline`, `weather_assitant` and `triage_assistant` quickstart examples. See the READMEs for more details.
 
 ## Utils
 
