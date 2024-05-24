@@ -17,5 +17,5 @@ The personal shopper example includes three main assistants to handle various cu
 Once you have installed dependencies and Swarm, run the example using:
 
 ```shell
-make run
+python3 main.py
 ```

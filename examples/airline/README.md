@@ -16,7 +16,7 @@ This example uses the helper function `run_demo_loop`, which allows us to create
 Once you have installed dependencies and Swarm, run the example using:
 
 ```shell
-make run
+python3 main.py
 ```
 ## Evaluations
 > [!NOTE]
@@ -44,8 +44,9 @@ The evaluation cases are stored in `eval/eval_cases/` subfolder.
 
 
 The script 'function_evals.py' will run the evals. Make sure to set `n` to the number
-of times you want to run each particular eval. To run the script, execute
+of times you want to run each particular eval. To run the script from the root airline folder, execute:
 ```bash
+cd evals
 python3 function_evals.py
 ```
 
