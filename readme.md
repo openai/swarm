@@ -301,18 +301,9 @@ def greet(name, age: int, location: str = "New York"):
       "parameters": {
          "type": "object",
          "properties": {
-            "name": {
-               "type": "string",
-               "description": "Name of the user."
-            },
-            "age": {
-               "type": "integer",
-               "description": "Age of the user."
-            },
-            "location": {
-               "type": "string",
-               "description": "Best place on earth."
-            }
+            "name": {"type": "string"},
+            "age": {"type": "integer"},
+            "location": {"type": "string"}
          },
          "required": ["name", "age"]
       }
