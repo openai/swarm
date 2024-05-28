@@ -50,9 +50,8 @@ class Swarm:
         # hide context_variables from model
         for tool in tools:
             params = tool["function"]["parameters"]
-            properties = params.get("properties", {})
-            properties.pop(__CTX_VARS_NAME__, None)
-            if __CTX_VARS_NAME__ in params.get("required", []):
+            params['properties'].pop(__CTX_VARS_NAME__, None)
+            if __CTX_VARS_NAME__ in params["required"]:
                 params["required"].remove(__CTX_VARS_NAME__)
 
         return self.client.chat.completions.create(
