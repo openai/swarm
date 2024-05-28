@@ -49,10 +49,10 @@ class Swarm:
         tools = [function_to_json(f) for f in assistant.functions]
         # hide context_variables from model
         for tool in tools:
-            params = tool["function"]["parameters"]
-            params['properties'].pop(__CTX_VARS_NAME__, None)
-            if __CTX_VARS_NAME__ in params["required"]:
-                params["required"].remove(__CTX_VARS_NAME__)
+            props = tool["function"]["parameters"]["properties"]
+            props.pop(__CTX_VARS_NAME__, None)
+            if __CTX_VARS_NAME__ in props["required"]:
+                props["required"].remove(__CTX_VARS_NAME__)
 
         return self.client.chat.completions.create(
             model=model_override or assistant.model,
