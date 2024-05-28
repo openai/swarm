@@ -6,7 +6,7 @@ def valid_to_change_flight():
     return "Customer is eligible to change flight"
 
 def change_flight():
-    return "Flight was successfuly changed!"
+    return "Flight was successfully changed!"
 
 def initiate_refund():
     status = "Refund initiated"
