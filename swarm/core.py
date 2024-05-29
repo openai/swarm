@@ -244,7 +244,7 @@ class Swarm:
         history = copy.deepcopy(messages)
         init_len = len(messages)
 
-        while len(history) - init_len < max_turns:
+        while len(history) - init_len < max_turns and active_assistant:
 
             # get completion with current history, assistant
             completion = self.get_chat_completion(
@@ -270,8 +270,7 @@ class Swarm:
             )
             history.extend(partial_response.messages)
             context_variables.update(partial_response.context_variables)
-            if partial_response.assistant:
-                active_assistant = partial_response.assistant
+            active_assistant = partial_response.assistant
 
         return Response(
             messages=history[init_len:],
