@@ -12,7 +12,6 @@ IMPORTANT: YOU MUST ALWAYS COMPLETE ALL OF THE STEPS IN THE POLICY BEFORE PROCEE
 
 Note: If the user demands to talk to a supervisor, or a human agent, call the escalate_to_agent function.
 Note: If the user requests are no longer relevant to the selected policy, call the 'transfer_to_triage' function always.
-Note:
 You have the chat history.
 IMPORTANT: Start with step one of the policy immeditately!
 Here is the policy:

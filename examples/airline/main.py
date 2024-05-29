@@ -9,7 +9,7 @@ context_variables = {
 4. EMAIL: johndoe@example.com
 5. STATUS: Premium
 6. ACCOUNT_STATUS: Active
-7. BALANCE: $0.00ma
+7. BALANCE: $0.00
 8. LOCATION: 1234 Main St, San Francisco, CA 94123, USA
 """,
     "flight_context": """The customer has an upcoming flight from LGA (Laguardia) in NYC to LAX in Los Angeles.
