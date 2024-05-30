@@ -36,5 +36,5 @@ class Result(BaseModel):
     """
 
     value: str = ""
-    assistant: Assistant = None
+    assistant: Optional[Assistant] = None
     context_variables: dict = {}
