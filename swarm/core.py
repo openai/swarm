@@ -2,11 +2,10 @@
 import copy
 import json
 from collections import defaultdict
-from typing import List, Callable, Union
+from typing import List
 
 # Package/library imports
 from openai import OpenAI
-
 
 # Local imports
 from .util import function_to_json, debug_print, merge_chunk
@@ -112,8 +111,8 @@ class Swarm:
             if __CTX_VARS_NAME__ in func.__code__.co_varnames:
                 args[__CTX_VARS_NAME__] = context_variables
             raw_result = function_map[name](**args)
-
             result: Result = self.handle_function_result(raw_result, debug)
+
             partial_response.messages.append(
                 {
                     "role": "tool",
@@ -137,12 +136,21 @@ class Swarm:
         max_turns: int = float("inf"),
         execute_tools: bool = True,
     ):
+        ######################################
+        #
+        # START BLOCK 1: this block is identical to a block in run(), possibly can be refactored
+        #
         active_assistant = assistant
         context_variables = copy.deepcopy(context_variables)
         history = copy.deepcopy(messages)
         init_len = len(messages)
+        #
+        # END BLOCK 1
+        #
+        ######################################
 
-        while len(history) - init_len < max_turns:
+        # this loop is identical to the one in run(), possibly can be refactored
+        while len(history) - init_len < max_turns and active_assistant:
 
             message = {
                 "content": "",
@@ -158,6 +166,7 @@ class Swarm:
                 ),
             }
 
+            # this call is identical to the one in run() other than the stream flag, possibly can be refactored
             # get completion with current history, assistant
             completion = self.get_chat_completion(
                 assistant=active_assistant,
@@ -179,37 +188,61 @@ class Swarm:
                 merge_chunk(message, delta)
             yield {"delim": "end"}
 
-            message["tool_calls"] = list(message.get("tool_calls", {}).values())
-            if not message["tool_calls"]:
-                message["tool_calls"] = None
+            # I refactored this a bit to make it more readable
+            raw_tool_calls = list(message.get("tool_calls", {}).values())
+            message["tool_calls"] = raw_tool_calls if raw_tool_calls else None
+            tool_calls = [
+                    ChatCompletionMessageToolCall(
+                    id=tool_call["id"],
+                    function=Function(
+                        arguments=tool_call["function"]["arguments"],
+                        name=tool_call["function"]["name"],
+                    ),
+                    type=tool_call["type"],
+                )
+                for tool_call in raw_tool_calls
+            ]
+
             debug_print(debug, "Received completion:", message)
             history.append(message)
 
-            if not message["tool_calls"] or not execute_tools:
+            ######################################
+            #
+            # START BLOCK 2: this block is identical to a block in run(), possibly can be refactored
+            #
+            if tool_calls and execute_tools:
+                # handle function calls, updating context_variables, and switching assistants
+                partial_response = self.handle_tool_calls(
+                    tool_calls, active_assistant.functions, context_variables, debug
+                )
+                history.extend(partial_response.messages)
+                context_variables.update(partial_response.context_variables)
+                next_assistant = partial_response.assistant
+            else:
+                next_assistant = None
+
+            # It's possible that the assistant has changed after handling tools, but
+            # we want to run the post_execute function on the assistant that was active.
+            # This allows any Assistant to run a post_execute, regardless of whether or not
+            # the last step was a tool.
+            if active_assistant.post_execute:
+                response = Response(
+                    messages=history[init_len:], assistant=next_assistant, context_variables=context_variables
+                )
+                result = active_assistant.post_execute(response)
+                context_variables.update(result.context_variables)
+                next_assistant = result.assistant
+
+            active_assistant = next_assistant
+            if not active_assistant:
                 debug_print(debug, "Ending turn.")
                 break
+            #
+            # END BLOCK 2
+            #
+            ######################################
 
-            # convert tool_calls to objects
-            tool_calls = []
-            for tool_call in message["tool_calls"]:
-                function = Function(
-                    arguments=tool_call["function"]["arguments"],
-                    name=tool_call["function"]["name"],
-                )
-                tool_call_object = ChatCompletionMessageToolCall(
-                    id=tool_call["id"], function=function, type=tool_call["type"]
-                )
-                tool_calls.append(tool_call_object)
-
-            # handle function calls, updating context_variables, and switching assistants
-            partial_response = self.handle_tool_calls(
-                tool_calls, active_assistant.functions, context_variables, debug
-            )
-            history.extend(partial_response.messages)
-            context_variables.update(partial_response.context_variables)
-            if partial_response.assistant:
-                active_assistant = partial_response.assistant
-
+        # this yields a Response which is identical to the one returned by run(), possibly can be refactored
         yield {
             "response": Response(
                 messages=history[init_len:],
@@ -239,13 +272,23 @@ class Swarm:
                 max_turns=max_turns,
                 execute_tools=execute_tools,
             )
+        ######################################
+        #
+        # START BLOCK 1: this block is identical to a block in runAndStream(), possibly can be refactored
+        #
         active_assistant = assistant
         context_variables = copy.deepcopy(context_variables)
         history = copy.deepcopy(messages)
         init_len = len(messages)
+        #
+        # END BLOCK 1
+        #
+        ######################################
 
+        # this loop is identical to the one in runAndStream(), possibly can be refactored
         while len(history) - init_len < max_turns and active_assistant:
 
+            # this call is identical to the one in runAndStream() other than the stream flag, possibly can be refactored
             # get completion with current history, assistant
             completion = self.get_chat_completion(
                 assistant=active_assistant,
@@ -259,19 +302,45 @@ class Swarm:
             debug_print(debug, "Received completion:", message)
             message.sender = active_assistant.name
             history.append(json.loads(message.model_dump_json()))  # to avoid OpenAI types (?)
+            tool_calls = message.tool_calls
 
-            if not message.tool_calls or not execute_tools:
+            ######################################
+            #
+            # START BLOCK 2: this block is identical to a block in runAndStream(), possibly can be refactored
+            #
+            if tool_calls and execute_tools:
+                # handle function calls, updating context_variables, and switching assistants
+                partial_response = self.handle_tool_calls(
+                    message.tool_calls, active_assistant.functions, context_variables, debug
+                )
+                history.extend(partial_response.messages)
+                context_variables.update(partial_response.context_variables)
+                next_assistant = partial_response.assistant
+            else:
+                next_assistant = None
+
+            # It's possible that the assistant has changed after handling tools, but
+            # we want to run the post_execute function on the assistant that was active.
+            # This allows any Assistant to run a post_execute, regardless of whether or not
+            # the last step was a tool.
+            if active_assistant.post_execute:
+                response = Response(
+                    messages=history[init_len:], assistant=next_assistant, context_variables=context_variables
+                )
+                result = active_assistant.post_execute(response)
+                context_variables.update(result.context_variables)
+                next_assistant = result.assistant
+
+            active_assistant = next_assistant
+            if not active_assistant:
                 debug_print(debug, "Ending turn.")
                 break
+            #
+            # END BLOCK 2
+            #
+            ######################################
 
-            # handle function calls, updating context_variables, and switching assistants
-            partial_response = self.handle_tool_calls(
-                message.tool_calls, active_assistant.functions, context_variables, debug
-            )
-            history.extend(partial_response.messages)
-            context_variables.update(partial_response.context_variables)
-            active_assistant = partial_response.assistant
-
+        # this returns a Response which is identical to the one yielded by runAndStream(), possibly can be refactored
         return Response(
             messages=history[init_len:],
             assistant=active_assistant,
