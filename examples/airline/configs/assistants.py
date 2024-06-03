@@ -1,7 +1,7 @@
-from ..configs.tools import *
-from ..data.routines.baggage.policies import *
-from ..data.routines.flight_modification.policies import *
-from ..data.routines.prompts import STARTER_PROMPT
+from configs.tools import *
+from data.routines.baggage.policies import *
+from data.routines.flight_modification.policies import *
+from data.routines.prompts import STARTER_PROMPT
 
 from swarm import Assistant
 

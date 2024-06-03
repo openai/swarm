@@ -1,4 +1,4 @@
-from examples.airline.configs.assistants import *
+from configs.assistants import *
 from swarm.repl import run_demo_loop
 
 context_variables = {
