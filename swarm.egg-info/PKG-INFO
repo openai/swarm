@@ -323,7 +323,7 @@ class Response(BaseModel):
 def run(
    assistant: Assistant,
    messages: List,
-   context: dict = {},
+   context: dict = None,
    model_override: str = None,
    debug: bool = False,
    max_turns: int = float("inf"),

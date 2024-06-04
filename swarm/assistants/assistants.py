@@ -9,9 +9,11 @@ def create_triage_assistant(
             "Determine which assistant is best suited to handle the user's request, "
             "and transfer the conversation to that assistant."
         ),
-        assistants: List[Assistant] = [],
+        assistants: List[Assistant] = None,
         add_backlinks: bool = True,
 ) -> Assistant:
+    assistants = assistants or []
+
     def transfer_back_to_triage() -> Assistant:
         """Only call this function if a user is asking about a topic that is not handled by the current assistant."""
         return ta

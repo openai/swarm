@@ -59,12 +59,13 @@ def pretty_print_messages(messages) -> None:
 
 
 def run_demo_loop(
-    starting_assistant, context_variables={}, stream=False, debug=False
+    starting_assistant, context_variables=None, stream=False, debug=False
 ) -> None:
     client = Swarm()
     print("Starting Swarm CLI 🐝")
 
     messages = []
+    context_variables = context_variables or {}
     assistant = starting_assistant
 
     while True:

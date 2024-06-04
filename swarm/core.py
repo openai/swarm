@@ -130,7 +130,7 @@ class Swarm:
         self,
         assistant: Assistant,
         messages: List,
-        context_variables: dict = {},
+        context_variables: dict = None,
         model_override: str = None,
         debug: bool = False,
         max_turns: int = float("inf"),
@@ -141,7 +141,7 @@ class Swarm:
         # START BLOCK 1: this block is identical to a block in run(), possibly can be refactored
         #
         active_assistant = assistant
-        context_variables = copy.deepcopy(context_variables)
+        context_variables = copy.deepcopy(context_variables) if context_variables else {}
         history = copy.deepcopy(messages)
         init_len = len(messages)
         #
@@ -255,7 +255,7 @@ class Swarm:
         self,
         assistant: Assistant,
         messages: List,
-        context_variables: dict = {},
+        context_variables: dict = None,
         model_override: str = None,
         stream: bool = False,
         debug: bool = False,
@@ -277,7 +277,7 @@ class Swarm:
         # START BLOCK 1: this block is identical to a block in runAndStream(), possibly can be refactored
         #
         active_assistant = assistant
-        context_variables = copy.deepcopy(context_variables)
+        context_variables = copy.deepcopy(context_variables) if context_variables else {}
         history = copy.deepcopy(messages)
         init_len = len(messages)
         #
