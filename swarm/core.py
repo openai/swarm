@@ -123,7 +123,8 @@ class Swarm:
                 }
             )
             partial_response.context_variables.update(result.context_variables)
-            partial_response.assistant = result.assistant
+            if result.assistant:
+                partial_response.assistant = result.assistant
 
         return partial_response
 
