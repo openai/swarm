@@ -271,7 +271,8 @@ class Swarm:
             )
             history.extend(partial_response.messages)
             context_variables.update(partial_response.context_variables)
-            active_assistant = partial_response.assistant
+            if partial_response.assistant:
+                active_assistant = partial_response.assistant
 
         return Response(
             messages=history[init_len:],
