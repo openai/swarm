@@ -59,6 +59,7 @@ class Swarm:
             messages=messages,
             tools=[function_to_json(f) for f in assistant.functions] or None,
             tool_choice=assistant.tool_choice,
+            parallel_tool_calls=assistant.parallel_tool_calls,
             stream=stream,
         )
 
