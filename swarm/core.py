@@ -57,7 +57,7 @@ class Swarm:
         return self.client.chat.completions.create(
             model=model_override or assistant.model,
             messages=messages,
-            tools=[function_to_json(f) for f in assistant.functions] or None,
+            tools=tools or None,
             tool_choice=assistant.tool_choice,
             stream=stream,
         )
