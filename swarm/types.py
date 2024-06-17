@@ -17,6 +17,7 @@ class Assistant(BaseModel):
     instructions: Union[str, Callable[[], str]] = "You are a helpful assistant."
     functions: List[AssistantFunction] = []
     tool_choice: str = None
+    parallel_tool_calls: bool = True
 
 
 class Response(BaseModel):
