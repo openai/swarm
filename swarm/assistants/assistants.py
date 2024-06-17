@@ -4,13 +4,13 @@ from swarm import Assistant
 
 
 def create_triage_assistant(
-        name: str = "Triage Assistant",
-        instructions: str = (
-            "Determine which assistant is best suited to handle the user's request, "
-            "and transfer the conversation to that assistant."
-        ),
-        assistants: List[Assistant] = [],
-        add_backlinks: bool = True,
+    name: str = "Triage Assistant",
+    instructions: str = (
+        "Determine which assistant is best suited to handle the user's request, "
+        "and transfer the conversation to that assistant."
+    ),
+    assistants: List[Assistant] = [],
+    add_backlinks: bool = True,
 ) -> Assistant:
     def transfer_back_to_triage() -> Assistant:
         """Only call this function if a user is asking about a topic that is not handled by the current assistant."""
