@@ -3,6 +3,7 @@ from assistants import triage_assistant, sales_assistant, refunds_assistant
 from evals_util import evaluate_with_llm_bool, BoolEvalResult
 import pytest
 import json
+
 client = Swarm()
 
 CONVERSATIONAL_EVAL_SYSTEM_PROMPT = """
@@ -18,7 +19,7 @@ It is possible that the user is not satisfied with the answer, but the assistant
 def conversation_was_successful(messages) -> bool:
     conversation = f"CONVERSATION: {json.dumps(messages)}"
     result: BoolEvalResult = evaluate_with_llm_bool(
-        CONVERSATIONAL_EVAL_SYSTEM_PROMPT,conversation
+        CONVERSATIONAL_EVAL_SYSTEM_PROMPT, conversation
     )
     return result.value
 
@@ -58,9 +59,9 @@ def test_triage_assistant_calls_correct_function(query, function_name):
             {"role": "user", "content": "Hello!"},
             {"role": "assistant", "content": "Hi there! How can I assist you today?"},
             {"role": "user", "content": "I want to make a refund."},
-            {"role": "tool","tool_name":"transfer_to_refunds"},
+            {"role": "tool", "tool_name": "transfer_to_refunds"},
             {"role": "user", "content": "Thank you!"},
-            {"role": "assistant", "content": "You're welcome! Have a great day!"}
+            {"role": "assistant", "content": "You're welcome! Have a great day!"},
         ],
     ],
 )

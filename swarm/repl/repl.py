@@ -36,7 +36,6 @@ def process_and_print_streaming_response(response):
 
 def pretty_print_messages(messages) -> None:
     for message in messages:
-
         if message["role"] != "assistant":
             continue
 

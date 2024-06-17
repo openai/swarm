@@ -24,8 +24,10 @@ def transfer_to_lost_baggage():
 
 def transfer_to_triage():
     """Call this function when a user needs to be transferred to a differnt assistant and a different policy.
-    For instance, if a user is asking about a topic that is not handled by the current assistant, call this function."""
+    For instance, if a user is asking about a topic that is not handled by the current assistant, call this function.
+    """
     return triage_assistant
+
 
 def triage_instructions(context_variables):
     customer_context = context_variables.get("customer_context", None)
@@ -41,7 +43,7 @@ def triage_instructions(context_variables):
 triage_assistant = Assistant(
     name="Triage Assistant",
     instructions=triage_instructions,
-    functions=[transfer_to_flight_modification, transfer_to_lost_baggage]
+    functions=[transfer_to_flight_modification, transfer_to_lost_baggage],
 )
 
 flight_modification = Assistant(
@@ -51,26 +53,40 @@ flight_modification = Assistant(
 You already know the intent is for flight modification related question. First, look at message history and see if you can determine if the user wants to cancel or change their flight.
 Ask user clarifying questions until you know whether or not it is a cancel request or change flight request. Once you know, call the appropriate transfer function""",
     functions=[transfer_to_flight_cancel, transfer_to_flight_change],
-    parallel_tool_calls=False
+    parallel_tool_calls=False,
 )
 
 flight_cancel = Assistant(
     name="Flight cancel traversal",
     instructions=STARTER_PROMPT + FLIGHT_CANCELLATION_POLICY,
     functions=[
-        escalate_to_agent, initiate_refund, initiate_flight_credits, transfer_to_triage, case_resolved],
+        escalate_to_agent,
+        initiate_refund,
+        initiate_flight_credits,
+        transfer_to_triage,
+        case_resolved,
+    ],
 )
 
 flight_change = Assistant(
     name="Flight change traversal",
     instructions=STARTER_PROMPT + FLIGHT_CHANGE_POLICY,
     functions=[
-        escalate_to_agent, change_flight, valid_to_change_flight, transfer_to_triage, case_resolved],
+        escalate_to_agent,
+        change_flight,
+        valid_to_change_flight,
+        transfer_to_triage,
+        case_resolved,
+    ],
 )
 
 lost_baggage = Assistant(
     name="Lost baggage traversal",
     instructions=STARTER_PROMPT + LOST_BAGGAGE_POLICY,
     functions=[
-        escalate_to_agent, initiate_baggage_search, transfer_to_triage, case_resolved],
+        escalate_to_agent,
+        initiate_baggage_search,
+        transfer_to_triage,
+        case_resolved,
+    ],
 )
