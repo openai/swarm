@@ -129,7 +129,7 @@ class Swarm:
 
         return partial_response
 
-    def runAndStream(
+    def run_and_stream(
         self,
         assistant: Assistant,
         messages: List,
@@ -232,7 +232,7 @@ class Swarm:
         execute_tools: bool = True,
     ) -> Response:
         if stream:
-            return self.runAndStream(
+            return self.run_and_stream(
                 assistant=assistant,
                 messages=messages,
                 context_variables=context_variables,
