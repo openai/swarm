@@ -59,7 +59,7 @@ class Swarm:
             messages=messages,
             tools=tools or None,
             tool_choice=assistant.tool_choice,
-            parallel_tool_calls=assistant.parallel_tool_calls,
+            parallel_tool_calls=assistant.parallel_tool_calls if tools else None,
             stream=stream,
         )
 
