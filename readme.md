@@ -1,4 +1,4 @@
-![Swarm Logo](assets/diagram.png)
+![Swarm Logo](assets/logo.png)
 
 # Swarm
 
