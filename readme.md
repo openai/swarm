@@ -1,4 +1,4 @@
-![Swarm Logo](https://github.com/openai/swarm-core/assets/25421602/a1961113-e3b5-4341-9208-665a5e7959ee)
+![Swarm Logo](assets/logo.png)
 
 # Swarm
 
@@ -92,7 +92,7 @@ Check out `/examples` for inspiration! Learn more about each one in its README.
 
 # Documentation
 
-<img width="969" alt="Screenshot 2024-05-22 at 6 52 04 PM" src="https://github.com/openai/swarm-core/assets/25421602/565ccb40-bdf7-4947-92a1-ae41d16a4c8e">
+![Swarm Diagram](assets/swarm_diagram.png)
 
 ## Running Swarm
 
