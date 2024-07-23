@@ -54,14 +54,18 @@ class Swarm:
             if __CTX_VARS_NAME__ in params["required"]:
                 params["required"].remove(__CTX_VARS_NAME__)
 
-        return self.client.chat.completions.create(
-            model=model_override or assistant.model,
-            messages=messages,
-            tools=tools or None,
-            tool_choice=assistant.tool_choice,
-            parallel_tool_calls=assistant.parallel_tool_calls if tools else None,
-            stream=stream,
-        )
+        create_params = {
+            "model": model_override or assistant.model,
+            "messages": messages,
+            "tools": tools or None,
+            "tool_choice": assistant.tool_choice,
+            "stream": stream,
+        }
+
+        if tools:
+            create_params["parallel_tool_calls"] = assistant.parallel_tool_calls
+
+        return self.client.chat.completions.create(**create_params)
 
     def handle_function_result(self, result, debug) -> Result:
         match result:
