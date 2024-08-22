@@ -1,7 +1,0 @@
-numpy
-openai
-pytest
-requests
-tqdm
-pre-commit
-instructor
