@@ -1,8 +1,11 @@
 ![Swarm Logo](assets/logo.png)
 
-# Swarm
+# Swarm (experimental)
 
-A lightweight, stateless multi-assistant orchestration framework.
+An ergonomic, lightweight multi-assistant orchestration framework.
+
+> [!WARNING]  
+> Swarm is currently an experimental framework intended to explore ergonomic interfaces for multi-assistant systems. It is not intended to be used in production, and therefore has no official support.
 
 ## Install
 
@@ -60,13 +63,9 @@ What can I assist?
 
 # Overview
 
-Swarm focuses on making assistant **coordination** and **execution** lightweight, highly controllable, and easily testable. It accomplishes this by introducing a single new, yet familiar, primitive: an `Assistant`.
+Swarm focuses on making assistant **coordination** and **execution** lightweight, highly controllable, and easily testable.
 
-A Swarm `Assistant` can:
-
-- Execute tools and take multiple steps
-- Read/write context variables in its instructions and functions
-- Hand off a conversation to another `Assistant`
+It accomplishes this through two primitive abstractions: `Assistant`s and **handoffs**. An `Assistant` encompasses `instructions` and `tools`, and can at any point choose to hand off a conversation to another `Assistant`.
 
 These primitives are powerful enough to express rich dynamics between tools and networks of assistants, allowing you to build scalable, real-world solutions while avoiding a steep learning curve.
 
@@ -327,6 +326,7 @@ Two new event types have been added:
 - `{"response": Response}` will return a `Response` object at the end of a stream with the aggregated (complete) response, for convenience.
 
 # Evaluations
+
 Evaluations are crucial to any project, and we encourage developers to bring their own eval suites to test the performance of their swarms. For reference, we have some examples for how to eval swarm in the `airline`, `weather_assistant` and `triage_assistant` quickstart examples. See the READMEs for more details.
 
 # Utils
