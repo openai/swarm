@@ -338,3 +338,6 @@ from swarm.repl import run_demo_loop
 ...
 run_demo_loop(agent, stream=True)
 ```
+
+# Contributors
+Ilan Bigio - [ibigio](https://github.com/ibigio)
