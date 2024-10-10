@@ -1,0 +1,20 @@
+[
+  {
+      "conversation": [
+          {"role": "user", "content": "I want to change my flight to one day earlier!"}
+      ],
+      "function": "transfer_to_flight_change"
+  },
+  {
+      "conversation": [
+          {"role": "user", "content": "I want to cancel my flight. I can't make it anymore due to a personal conflict"}
+      ],
+      "function": "transfer_to_flight_cancel"
+  },
+  {
+      "conversation": [
+          {"role": "user", "content": "I dont want this flight"}
+      ],
+      "function": "None"
+  }
+]

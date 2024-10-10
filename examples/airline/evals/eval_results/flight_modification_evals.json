@@ -1,0 +1,245 @@
+[
+    {
+        "id": "68894a5b-e630-4db9-8297-26c8f33fd611",
+        "timestamp": "2024-05-15T09:35:24.444434",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to change my flight!"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_change",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I can help with that. To better assist you, can you please provide some additional details about your request?\n\n- Are you looking to change the date or time of your flight?\n- Would you like to modify your destination or departure location?\n- Are you looking to change the names of the passengers on your booking?\n- Do you need to cancel your current booking before making a new one?",
+                    "I can help with that! Could you please provide a bit more information about what kind of change you need to make to your flight? For example, are you looking to change the date, time, or destination of your flight? Or is it something else?",
+                    "I can help you with that. Could you please provide more details about the change you need to make? For example:\n\n1. Do you need to change the date or time of your flight?\n2. Are you looking to change the destination or departure location?\n3. Do you need to change the passenger details for the flight?\n4. Are you looking to add or remove any services associated with your flight?\n\nThis information will help me direct your request to the appropriate service.",
+                    "I'd be happy to help you with changing your flight. Could you please provide more details about what you need to change? For example:\n- Are you looking to change the date or time of your flight?\n- Would you like to change the destination or origin?\n- Are you looking to change the passenger name or any other details?\n\nThis will help me determine the best way to assist you.",
+                    "I can help with that. Can you please specify what kind of change you need to make? For example, are you looking to change the date, time, or destination of your flight? Or do you need to make a different type of modification?"
+                ],
+                "case_accuracy": "0.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_change",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I can assist you with that. Could you please provide me with the following details to ensure a smooth process:\n\n1. Your booking reference or confirmation number.\n2. Your full name as it appears on the booking.\n3. The flight number and date you want to cancel.\n\nOnce I have this information, I can proceed to transfer you to the appropriate team.",
+                    "Can you please provide the flight number or your booking reference? This will help me process your cancellation request.",
+                    "Thank you for letting me know. Could you please provide me with your flight details, such as the flight number and date, so I can assist you further?",
+                    "I understand that you want to cancel your flight. I just need to confirm a few details before proceeding. \n\nCan you please confirm if you want to cancel the entire itinerary or just a specific segment of your trip?",
+                    "I understand that you want to cancel your flight. To assist you better, can you please confirm the following details:\n\n1. Do you want to change the dates or completely cancel the flight?\n2. Can you provide your booking reference or ticket number?\n3. Is there any specific reason for the cancellation, such as changes in travel plans, health reasons, etc.?\n\nThis will help me to proceed accordingly."
+                ],
+                "case_accuracy": "0.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I dont want this flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I understand that you don't want your current flight. Are you looking to cancel the flight altogether, or would you prefer to change it to a different date or time?",
+                    "I understand you don't want this flight. Are you looking to cancel your flight entirely or would you like to change it to a different one?",
+                    "I understand you don't want your current flight. Can you please clarify whether you would prefer to cancel your flight or change it to a different one?",
+                    "I understand that you want to make changes to your flight. Could you please clarify if you want to cancel your flight or if you are looking to change it to a different flight?",
+                    "I understand, you don't want this flight. Could you please clarify if you want to cancel your flight or if you\u2019re looking to change it to a different flight?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 5,
+        "total_evals": 15,
+        "overall_accuracy_percent": "33.33%"
+    },
+    {
+        "id": "18f4deb8-81dd-4b8a-8f62-d162a556987e",
+        "timestamp": "2024-05-15T09:36:19.047583",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to change my flight to one day earlier!"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_change",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I can help you with that. Could you please provide me with your current flight details, such as the booking reference number and the new date and time you would like to change your flight to?",
+                    "I can assist you with that. Can you please provide me with your current flight details, such as the booking reference number, and the new desired date and time for your flight?",
+                    "I can help with that! To confirm, are you looking to change the date of your current flight to a day earlier or cancel and book a new flight?",
+                    "I understand you're looking to change your flight. Let me gather a bit more information to assist you better:\n\nWhat is your current flight date and time, and what is the new date and time you would like to change it to?\n\nAdditionally, could you please provide the booking reference or ticket number for your current flight?",
+                    "I can help you with that. Could you please provide me with your current flight details, such as the flight number and date? This will help me better assist you in changing your flight."
+                ],
+                "case_accuracy": "0.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight. I can't make it anymore due to a personal conflict"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_change",
+                "actual_function": [
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "0.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I dont want this flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I understand that you'd like to make a change to your flight. Do you wish to cancel the flight entirely, or are you looking to change the flight time, date, or destination?",
+                    "I understand you don't want your current flight. Are you looking to cancel your flight or change it to a different one?",
+                    "I understand you want to make changes to your flight. Are you looking to cancel your flight or change it to a different flight or date?",
+                    "I understand you don't want this flight. Are you looking to cancel your flight or change it to a different date or time?",
+                    "I understand that you don't want your current flight. Could you please clarify if you would like to cancel the flight entirely, or if you are looking to change it to a different flight?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 5,
+        "total_evals": 15,
+        "overall_accuracy_percent": "33.33%"
+    },
+    {
+        "id": "07e5fdcd-9b9c-4b59-9dbf-1e061fb0205d",
+        "timestamp": "2024-05-20T15:58:14.499075",
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to change my flight to one day earlier!"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_change",
+                "actual_function": [
+                    "transfer_to_flight_change",
+                    "transfer_to_flight_change",
+                    "transfer_to_flight_change",
+                    "transfer_to_flight_change",
+                    "transfer_to_flight_change"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I want to cancel my flight. I can't make it anymore due to a personal conflict"
+                    }
+                ],
+                "expected_function": "transfer_to_flight_cancel",
+                "actual_function": [
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel",
+                    "transfer_to_flight_cancel"
+                ],
+                "actual_message": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "case_accuracy": "100.00%"
+            },
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "I dont want this flight"
+                    }
+                ],
+                "expected_function": "None",
+                "actual_function": [
+                    "None",
+                    "None",
+                    "None",
+                    "None",
+                    "None"
+                ],
+                "actual_message": [
+                    "I understand that you don't want the flight. To clarify, are you looking to cancel your flight or change it to a different one?",
+                    "I understand that you no longer want the flight. Just to confirm, are you looking to cancel your flight, or do you want to change it to another one?",
+                    "I understand you don't want this flight. Could you please clarify whether you want to cancel your flight or change it to a different date or time?",
+                    "I understand that you don't want this flight. Just to clarify, are you looking to cancel the flight completely or change it to a different one?",
+                    "I understand that you don't want this flight. Just to clarify, are you looking to cancel this flight or would you like to change it to a different flight?"
+                ],
+                "case_accuracy": "100.00%"
+            }
+        ],
+        "correct_evals": 15,
+        "total_evals": 15,
+        "overall_accuracy_percent": "100.00%"
+    }
+]
