@@ -1,4 +1,4 @@
-from configs.assistants import *
+from configs.agents import *
 from swarm.repl import run_demo_loop
 
 context_variables = {
@@ -16,4 +16,4 @@ context_variables = {
 The flight # is 1919. The flight departure date is 3pm ET, 5/21/2024.""",
 }
 if __name__ == "__main__":
-    run_demo_loop(triage_assistant, context_variables=context_variables, debug=True)
+    run_demo_loop(triage_agent, context_variables=context_variables, debug=True)

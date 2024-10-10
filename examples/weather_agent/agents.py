@@ -1,6 +1,6 @@
 import json
 
-from swarm import Assistant
+from swarm import Agent
 
 
 def get_weather(location, time="now"):
@@ -16,8 +16,8 @@ def send_email(recipient, subject, body):
     return "Sent!"
 
 
-weather_assistant = Assistant(
-    name="Weather Assistant",
-    instructions="You are a helpful assistant.",
+weather_agent = Agent(
+    name="Weather Agent",
+    instructions="You are a helpful agent.",
     functions=[get_weather, send_email],
 )

@@ -3,7 +3,7 @@ import re
 import qdrant_client
 from openai import OpenAI
 
-from swarm import Assistant
+from swarm import Agent
 from swarm.repl import run_demo_loop
 
 # Initialize connections
@@ -74,25 +74,25 @@ def submit_ticket(description):
     return {"response": f"Ticket created for {description}"}
 
 
-user_interface_assistant = Assistant(
-    name="User Interface Assistant",
-    instructions="You are a user interface assistant that handles all interactions with the user. Call this assistant for general questions and when no other assistant is correct for the user query.",
+user_interface_agent = Agent(
+    name="User Interface Agent",
+    instructions="You are a user interface agent that handles all interactions with the user. Call this agent for general questions and when no other agent is correct for the user query.",
     functions=[query_docs, submit_ticket, send_email],
 )
 
-help_center_assistant = Assistant(
-    name="Help Center Assistant",
-    instructions="You are an OpenAI help center assistant who deals with questions about OpenAI products, such as GPT models, DALL-E, Whisper, etc.",
+help_center_agent = Agent(
+    name="Help Center Agent",
+    instructions="You are an OpenAI help center agent who deals with questions about OpenAI products, such as GPT models, DALL-E, Whisper, etc.",
     functions=[query_docs, submit_ticket, send_email],
 )
 
 
 def transfer_to_help_center():
-    """Transfer the user to the help center assistant."""
-    return help_center_assistant
+    """Transfer the user to the help center agent."""
+    return help_center_agent
 
 
-user_interface_assistant.functions.append(transfer_to_help_center)
+user_interface_agent.functions.append(transfer_to_help_center)
 
 if __name__ == "__main__":
-    run_demo_loop(user_interface_assistant)
+    run_demo_loop(user_interface_agent)

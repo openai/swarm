@@ -1,5 +1,5 @@
 from swarm import Swarm
-from assistants import triage_assistant, sales_assistant, refunds_assistant
+from agents import triage_agent, sales_agent, refunds_agent
 from evals_util import evaluate_with_llm_bool, BoolEvalResult
 import pytest
 import json
@@ -7,12 +7,12 @@ import json
 client = Swarm()
 
 CONVERSATIONAL_EVAL_SYSTEM_PROMPT = """
-You will be provided with a conversation between a user and an assistant, as well as a main goal for the conversation.
-Your goal is to evaluate, based on the conversation, if the assistant achieves the main goal or not.
+You will be provided with a conversation between a user and an agent, as well as a main goal for the conversation.
+Your goal is to evaluate, based on the conversation, if the agent achieves the main goal or not.
 
-To assess whether the assistant manages to achieve the main goal, consider the instructions present in the main goal, as well as the way the user responds:
-is the answer satisfactory for the user or not, could the assistant have done better considering the main goal?
-It is possible that the user is not satisfied with the answer, but the assistant still achieves the main goal because it is following the instructions provided as part of the main goal.
+To assess whether the agent manages to achieve the main goal, consider the instructions present in the main goal, as well as the way the user responds:
+is the answer satisfactory for the user or not, could the agent have done better considering the main goal?
+It is possible that the user is not satisfied with the answer, but the agent still achieves the main goal because it is following the instructions provided as part of the main goal.
 """
 
 
@@ -24,10 +24,10 @@ def conversation_was_successful(messages) -> bool:
     return result.value
 
 
-def run_and_get_tool_calls(assistant, query):
+def run_and_get_tool_calls(agent, query):
     message = {"role": "user", "content": query}
     response = client.run(
-        assistant=assistant,
+        agent=agent,
         messages=[message],
         execute_tools=False,
     )
@@ -41,8 +41,8 @@ def run_and_get_tool_calls(assistant, query):
         ("I want to talk to sales.", "transfer_to_sales"),
     ],
 )
-def test_triage_assistant_calls_correct_function(query, function_name):
-    tool_calls = run_and_get_tool_calls(triage_assistant, query)
+def test_triage_agent_calls_correct_function(query, function_name):
+    tool_calls = run_and_get_tool_calls(triage_agent, query)
 
     assert len(tool_calls) == 1
     assert tool_calls[0]["function"]["name"] == function_name

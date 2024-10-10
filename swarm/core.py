@@ -11,8 +11,8 @@ from openai import OpenAI
 # Local imports
 from .util import function_to_json, debug_print, merge_chunk
 from .types import (
-    Assistant,
-    AssistantFunction,
+    Agent,
+    AgentFunction,
     ChatCompletionMessage,
     ChatCompletionMessageToolCall,
     Function,
@@ -31,7 +31,7 @@ class Swarm:
 
     def get_chat_completion(
         self,
-        assistant: Assistant,
+        agent: Agent,
         history: List,
         context_variables: dict,
         model_override: str,
@@ -40,14 +40,14 @@ class Swarm:
     ) -> ChatCompletionMessage:
         context_variables = defaultdict(str, context_variables)
         instructions = (
-            assistant.instructions(context_variables)
-            if callable(assistant.instructions)
-            else assistant.instructions
+            agent.instructions(context_variables)
+            if callable(agent.instructions)
+            else agent.instructions
         )
         messages = [{"role": "system", "content": instructions}] + history
         debug_print(debug, "Getting chat completion for...:", messages)
 
-        tools = [function_to_json(f) for f in assistant.functions]
+        tools = [function_to_json(f) for f in agent.functions]
         # hide context_variables from model
         for tool in tools:
             params = tool["function"]["parameters"]
@@ -56,15 +56,15 @@ class Swarm:
                 params["required"].remove(__CTX_VARS_NAME__)
 
         create_params = {
-            "model": model_override or assistant.model,
+            "model": model_override or agent.model,
             "messages": messages,
             "tools": tools or None,
-            "tool_choice": assistant.tool_choice,
+            "tool_choice": agent.tool_choice,
             "stream": stream,
         }
 
         if tools:
-            create_params["parallel_tool_calls"] = assistant.parallel_tool_calls
+            create_params["parallel_tool_calls"] = agent.parallel_tool_calls
 
         return self.client.chat.completions.create(**create_params)
 
@@ -73,28 +73,28 @@ class Swarm:
             case Result() as result:
                 return result
 
-            case Assistant() as assistant:
+            case Agent() as agent:
                 return Result(
-                    value=json.dumps({"assistant": assistant.name}),
-                    assistant=assistant,
+                    value=json.dumps({"assistant": agent.name}),
+                    agent=agent,
                 )
             case _:
                 try:
                     return Result(value=str(result))
                 except Exception as e:
-                    error_message = f"Failed to cast response to string: {result}. Make sure assistant functions return a string or Result object. Error: {str(e)}"
+                    error_message = f"Failed to cast response to string: {result}. Make sure agent functions return a string or Result object. Error: {str(e)}"
                     debug_print(debug, error_message)
                     raise TypeError(error_message)
 
     def handle_tool_calls(
         self,
         tool_calls: List[ChatCompletionMessageToolCall],
-        functions: List[AssistantFunction],
+        functions: List[AgentFunction],
         context_variables: dict,
         debug: bool,
     ) -> Response:
         function_map = {f.__name__: f for f in functions}
-        partial_response = Response(messages=[], assistant=None, context_variables={})
+        partial_response = Response(messages=[], agent=None, context_variables={})
 
         for tool_call in tool_calls:
             name = tool_call.function.name
@@ -114,7 +114,7 @@ class Swarm:
             debug_print(debug, f"Processing tool call: {name} with arguments {args}")
 
             func = function_map[name]
-            # pass context_variables to assistant functions
+            # pass context_variables to agent functions
             if __CTX_VARS_NAME__ in func.__code__.co_varnames:
                 args[__CTX_VARS_NAME__] = context_variables
             raw_result = function_map[name](**args)
@@ -129,14 +129,14 @@ class Swarm:
                 }
             )
             partial_response.context_variables.update(result.context_variables)
-            if result.assistant:
-                partial_response.assistant = result.assistant
+            if result.agent:
+                partial_response.agent = result.agent
 
         return partial_response
 
     def run_and_stream(
         self,
-        assistant: Assistant,
+        agent: Agent,
         messages: List,
         context_variables: dict = {},
         model_override: str = None,
@@ -144,7 +144,7 @@ class Swarm:
         max_turns: int = float("inf"),
         execute_tools: bool = True,
     ):
-        active_assistant = assistant
+        active_agent = agent
         context_variables = copy.deepcopy(context_variables)
         history = copy.deepcopy(messages)
         init_len = len(messages)
@@ -153,7 +153,7 @@ class Swarm:
 
             message = {
                 "content": "",
-                "sender": assistant.name,
+                "sender": agent.name,
                 "role": "assistant",
                 "function_call": None,
                 "tool_calls": defaultdict(
@@ -165,9 +165,9 @@ class Swarm:
                 ),
             }
 
-            # get completion with current history, assistant
+            # get completion with current history, agent
             completion = self.get_chat_completion(
-                assistant=active_assistant,
+                agent=active_agent,
                 history=history,
                 context_variables=context_variables,
                 model_override=model_override,
@@ -179,7 +179,7 @@ class Swarm:
             for chunk in completion:
                 delta = json.loads(chunk.choices[0].delta.json())
                 if delta["role"] == "assistant":
-                    delta["sender"] = active_assistant.name
+                    delta["sender"] = active_agent.name
                 yield delta
                 delta.pop("role", None)
                 delta.pop("sender", None)
@@ -208,26 +208,26 @@ class Swarm:
                 )
                 tool_calls.append(tool_call_object)
 
-            # handle function calls, updating context_variables, and switching assistants
+            # handle function calls, updating context_variables, and switching agents
             partial_response = self.handle_tool_calls(
-                tool_calls, active_assistant.functions, context_variables, debug
+                tool_calls, active_agent.functions, context_variables, debug
             )
             history.extend(partial_response.messages)
             context_variables.update(partial_response.context_variables)
-            if partial_response.assistant:
-                active_assistant = partial_response.assistant
+            if partial_response.agent:
+                active_agent = partial_response.agent
 
         yield {
             "response": Response(
                 messages=history[init_len:],
-                assistant=active_assistant,
+                agent=active_agent,
                 context_variables=context_variables,
             )
         }
 
     def run(
         self,
-        assistant: Assistant,
+        agent: Agent,
         messages: List,
         context_variables: dict = {},
         model_override: str = None,
@@ -238,7 +238,7 @@ class Swarm:
     ) -> Response:
         if stream:
             return self.run_and_stream(
-                assistant=assistant,
+                agent=agent,
                 messages=messages,
                 context_variables=context_variables,
                 model_override=model_override,
@@ -246,16 +246,16 @@ class Swarm:
                 max_turns=max_turns,
                 execute_tools=execute_tools,
             )
-        active_assistant = assistant
+        active_agent = agent
         context_variables = copy.deepcopy(context_variables)
         history = copy.deepcopy(messages)
         init_len = len(messages)
 
-        while len(history) - init_len < max_turns and active_assistant:
+        while len(history) - init_len < max_turns and active_agent:
 
-            # get completion with current history, assistant
+            # get completion with current history, agent
             completion = self.get_chat_completion(
-                assistant=active_assistant,
+                agent=active_agent,
                 history=history,
                 context_variables=context_variables,
                 model_override=model_override,
@@ -264,7 +264,7 @@ class Swarm:
             )
             message = completion.choices[0].message
             debug_print(debug, "Received completion:", message)
-            message.sender = active_assistant.name
+            message.sender = active_agent.name
             history.append(
                 json.loads(message.model_dump_json())
             )  # to avoid OpenAI types (?)
@@ -273,17 +273,17 @@ class Swarm:
                 debug_print(debug, "Ending turn.")
                 break
 
-            # handle function calls, updating context_variables, and switching assistants
+            # handle function calls, updating context_variables, and switching agents
             partial_response = self.handle_tool_calls(
-                message.tool_calls, active_assistant.functions, context_variables, debug
+                message.tool_calls, active_agent.functions, context_variables, debug
             )
             history.extend(partial_response.messages)
             context_variables.update(partial_response.context_variables)
-            if partial_response.assistant:
-                active_assistant = partial_response.assistant
+            if partial_response.agent:
+                active_agent = partial_response.agent
 
         return Response(
             messages=history[init_len:],
-            assistant=active_assistant,
+            agent=active_agent,
             context_variables=context_variables,
         )

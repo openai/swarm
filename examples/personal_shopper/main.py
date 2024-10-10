@@ -2,8 +2,8 @@ import datetime
 import random
 
 import database
-from swarm import Assistant
-from swarm.assistants import create_triage_assistant
+from swarm import Agent
+from swarm.agents import create_triage_agent
 from swarm.repl import run_demo_loop
 
 
@@ -90,20 +90,20 @@ database.preview_table("Users")
 database.preview_table("PurchaseHistory")
 database.preview_table("Products")
 
-# Define the assistants
+# Define the agents
 
-refunds_assistant = Assistant(
-    name="Refunds Assistant",
-    description=f"""You are a refund assistant that handles all actions related to refunds after a return has been processed.
+refunds_agent = Agent(
+    name="Refunds Agent",
+    description=f"""You are a refund agent that handles all actions related to refunds after a return has been processed.
     You must ask for both the user ID and item ID to initiate a refund. Ask for both user_id and item_id in one message.
     If the user asks you to notify them, you must ask them what their preferred method of notification is. For notifications, you must
     ask them for user_id and method in one message.""",
     functions=[refund_item, notify_customer],
 )
 
-sales_assistant = Assistant(
-    name="Sales Assistant",
-    description=f"""You are a sales assistant that handles all actions related to placing an order to purchase an item.
+sales_agent = Agent(
+    name="Sales Agent",
+    description=f"""You are a sales agent that handles all actions related to placing an order to purchase an item.
     Regardless of what the user wants to purchase, must ask for BOTH the user ID and product ID to place an order.
     An order cannot be placed without these two pieces of inforamation. Ask for both user_id and product_id in one message.
     If the user asks you to notify them, you must ask them what their preferred method is. For notifications, you must
@@ -112,22 +112,22 @@ sales_assistant = Assistant(
     functions=[order_item, notify_customer],
 )
 
-triage_assistant = create_triage_assistant(
-    name="Triage Assistant",
+triage_agent = create_triage_agent(
+    name="Triage Agent",
     instructions=f"""You are to triage a users request, and call a tool to transfer to the right intent.
     Once you are ready to transfer to the right intent, call the tool to transfer to the right intent.
     You dont need to know specifics, just the topic of the request.
-    If the user request is about making an order or purchasing an item, transfer to the Sales Assistant.
-    If the user request is about getting a refund on an item or returning a product, transfer to the Refunds Assistant.
-    When you need more information to triage the request to an assistant, ask a direct question without explaining why you're asking it.
+    If the user request is about making an order or purchasing an item, transfer to the Sales Agent.
+    If the user request is about getting a refund on an item or returning a product, transfer to the Refunds Agent.
+    When you need more information to triage the request to an agent, ask a direct question without explaining why you're asking it.
     Do not share your thought process with the user! Do not make unreasonable assumptions on behalf of user.""",
-    assistants=[sales_assistant, refunds_assistant],
+    agents=[sales_agent, refunds_agent],
     add_backlinks=True,
 )
 
-for f in triage_assistant.functions:
+for f in triage_agent.functions:
     print(f.__name__)
 
 if __name__ == "__main__":
     # Run the demo loop
-    run_demo_loop(triage_assistant, debug=False)
+    run_demo_loop(triage_agent, debug=False)

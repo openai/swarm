@@ -5,7 +5,7 @@ import uuid
 from swarm import Swarm
 
 
-def run_function_evals(assistant, test_cases, n=1, eval_path=None):
+def run_function_evals(agent, test_cases, n=1, eval_path=None):
     correct_function = 0
     results = []
     eval_id = str(uuid.uuid4())
@@ -25,7 +25,7 @@ def run_function_evals(assistant, test_cases, n=1, eval_path=None):
         for i in range(n):
             print(f"\033[90mIteration: {i + 1}/{n}\033[0m")
             response = client.run(
-                assistant=assistant, messages=test_case["conversation"], max_turns=1
+                agent=agent, messages=test_case["conversation"], max_turns=1
             )
             output = extract_response_info(response)
             actual_function = output.get("tool_calls", "None")

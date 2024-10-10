@@ -1,4 +1,4 @@
-from swarm import Swarm, Assistant
+from swarm import Swarm, Agent
 
 client = Swarm()
 
@@ -7,13 +7,13 @@ def get_weather(location) -> str:
     return "{'temp':67, 'unit':'F'}"
 
 
-assistant = Assistant(
-    name="Assistant",
-    instructions="You are a helpful assistant.",
+agent = Agent(
+    name="Agent",
+    instructions="You are a helpful agent.",
     functions=[get_weather],
 )
 
 messages = [{"role": "user", "content": "What's the weather in NYC?"}]
 
-response = client.run(assistant=assistant, messages=messages)
+response = client.run(agent=agent, messages=messages)
 print(response.messages[-1]["content"])

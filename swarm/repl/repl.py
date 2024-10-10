@@ -39,7 +39,7 @@ def pretty_print_messages(messages) -> None:
         if message["role"] != "assistant":
             continue
 
-        # print assistant name in blue
+        # print agent name in blue
         print(f"\033[94m{message['sender']}\033[0m:", end=" ")
 
         # print response, if any
@@ -58,20 +58,20 @@ def pretty_print_messages(messages) -> None:
 
 
 def run_demo_loop(
-    starting_assistant, context_variables={}, stream=False, debug=False
+    starting_agent, context_variables={}, stream=False, debug=False
 ) -> None:
     client = Swarm()
     print("Starting Swarm CLI 🐝")
 
     messages = []
-    assistant = starting_assistant
+    agent = starting_agent
 
     while True:
         user_input = input("\033[90mUser\033[0m: ")
         messages.append({"role": "user", "content": user_input})
 
         response = client.run(
-            assistant=assistant,
+            agent=agent,
             messages=messages,
             context_variables=context_variables,
             stream=stream,
@@ -84,4 +84,4 @@ def run_demo_loop(
             pretty_print_messages(response.messages)
 
         messages.extend(response.messages)
-        assistant = response.assistant
+        agent = response.agent

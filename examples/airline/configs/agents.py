@@ -3,7 +3,7 @@ from data.routines.baggage.policies import *
 from data.routines.flight_modification.policies import *
 from data.routines.prompts import STARTER_PROMPT
 
-from swarm import Assistant
+from swarm import Agent
 
 
 def transfer_to_flight_modification():
@@ -23,10 +23,10 @@ def transfer_to_lost_baggage():
 
 
 def transfer_to_triage():
-    """Call this function when a user needs to be transferred to a differnt assistant and a different policy.
-    For instance, if a user is asking about a topic that is not handled by the current assistant, call this function.
+    """Call this function when a user needs to be transferred to a differnt agent and a different policy.
+    For instance, if a user is asking about a topic that is not handled by the current agent, call this function.
     """
-    return triage_assistant
+    return triage_agent
 
 
 def triage_instructions(context_variables):
@@ -35,20 +35,20 @@ def triage_instructions(context_variables):
     return f"""You are to triage a users request, and call a tool to transfer to the right intent.
     Once you are ready to transfer to the right intent, call the tool to transfer to the right intent.
     You dont need to know specifics, just the topic of the request.
-    When you need more information to triage the request to an assistant, ask a direct question without explaining why you're asking it.
+    When you need more information to triage the request to an agent, ask a direct question without explaining why you're asking it.
     Do not share your thought process with the user! Do not make unreasonable assumptions on behalf of user.
     The customer context is here: {customer_context}, and flight context is here: {flight_context}"""
 
 
-triage_assistant = Assistant(
-    name="Triage Assistant",
+triage_agent = Agent(
+    name="Triage Agent",
     instructions=triage_instructions,
     functions=[transfer_to_flight_modification, transfer_to_lost_baggage],
 )
 
-flight_modification = Assistant(
-    name="Flight Modification Assistant",
-    instructions="""You are a Flight Modification Assistant for a customer service airlines company.
+flight_modification = Agent(
+    name="Flight Modification Agent",
+    instructions="""You are a Flight Modification Agent for a customer service airlines company.
       You are an expert customer service agent deciding which sub intent the user should be referred to.
 You already know the intent is for flight modification related question. First, look at message history and see if you can determine if the user wants to cancel or change their flight.
 Ask user clarifying questions until you know whether or not it is a cancel request or change flight request. Once you know, call the appropriate transfer function. Either ask clarifying questions, or call one of your functions, every time.""",
@@ -56,7 +56,7 @@ Ask user clarifying questions until you know whether or not it is a cancel reque
     parallel_tool_calls=False,
 )
 
-flight_cancel = Assistant(
+flight_cancel = Agent(
     name="Flight cancel traversal",
     instructions=STARTER_PROMPT + FLIGHT_CANCELLATION_POLICY,
     functions=[
@@ -68,7 +68,7 @@ flight_cancel = Assistant(
     ],
 )
 
-flight_change = Assistant(
+flight_change = Agent(
     name="Flight change traversal",
     instructions=STARTER_PROMPT + FLIGHT_CHANGE_POLICY,
     functions=[
@@ -80,7 +80,7 @@ flight_change = Assistant(
     ],
 )
 
-lost_baggage = Assistant(
+lost_baggage = Agent(
     name="Lost baggage traversal",
     instructions=STARTER_PROMPT + LOST_BAGGAGE_POLICY,
     functions=[

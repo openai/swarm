@@ -1,13 +1,13 @@
-from swarm import Swarm, Assistant
+from swarm import Swarm, Agent
 
 client = Swarm()
 
-assistant = Assistant(
-    name="Assistant",
-    instructions="You are a helpful assistant.",
+agent = Agent(
+    name="Agent",
+    instructions="You are a helpful agent.",
 )
 
 messages = [{"role": "user", "content": "Hi!"}]
-response = client.run(assistant=assistant, messages=messages)
+response = client.run(agent=agent, messages=messages)
 
 print(response.messages[-1]["content"])

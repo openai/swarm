@@ -1,10 +1,10 @@
-from swarm import Swarm, Assistant
+from swarm import Swarm, Agent
 
 client = Swarm()
 
-my_assistant = Assistant(
-    name="Assistant",
-    instructions="You are a helpful assistant.",
+my_agent = Agent(
+    name="Agent",
+    instructions="You are a helpful agent.",
 )
 
 
@@ -16,12 +16,12 @@ def pretty_print_messages(messages):
 
 
 messages = []
-assistant = my_assistant
+agent = my_agent
 while True:
     user_input = input("> ")
     messages.append({"role": "user", "content": user_input})
 
-    response = client.run(assistant=assistant, messages=messages)
+    response = client.run(agent=agent, messages=messages)
     messages = response.messages
-    assistant = response.assistant
+    agent = response.agent
     pretty_print_messages(messages)
