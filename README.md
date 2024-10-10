@@ -4,7 +4,7 @@
 
 An ergonomic, lightweight multi-agent orchestration framework.
 
-> [!WARNING]  
+> [!WARNING]
 > Swarm is currently an experimental framework intended to explore ergonomic interfaces for multi-agent systems. It is not intended to be used in production, and therefore has no official support.
 
 ## Install
@@ -341,3 +341,4 @@ run_demo_loop(agent, stream=True)
 
 # Contributors
 Ilan Bigio - [ibigio](https://github.com/ibigio)
+James Hills - [jhills20](https://github.com/jhills20)
