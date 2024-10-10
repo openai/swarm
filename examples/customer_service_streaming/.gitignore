@@ -1,0 +1,5 @@
+**/src/threads/thread_data.json
+**/__pycache__/**
+**/threads/thread_data.json
+**/logs/session_*
+**/test_runs/test_*
