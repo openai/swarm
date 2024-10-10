@@ -340,5 +340,6 @@ run_demo_loop(agent, stream=True)
 ```
 
 # Contributors
-Ilan Bigio - [ibigio](https://github.com/ibigio)
-James Hills - [jhills20](https://github.com/jhills20)
+- Ilan Bigio - [ibigio](https://github.com/ibigio)
+- James Hills - [jhills20](https://github.com/jhills20)
+- Shyamal Anadkat - [shyamal-anadkat](https://github.com/shyamal-anadkat)
