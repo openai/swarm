@@ -1,6 +1,8 @@
 import json
+from typing import Any, Dict, List, Optional
 
 from swarm import Swarm
+from ..types import Agent
 
 
 def process_and_print_streaming_response(response):
@@ -34,7 +36,7 @@ def process_and_print_streaming_response(response):
             return chunk["response"]
 
 
-def pretty_print_messages(messages) -> None:
+def pretty_print_messages(messages: List[Dict[str, Any]]) -> None:
     for message in messages:
         if message["role"] != "assistant":
             continue
@@ -58,7 +60,10 @@ def pretty_print_messages(messages) -> None:
 
 
 def run_demo_loop(
-    starting_agent, context_variables=None, stream=False, debug=False
+    starting_agent: Agent, 
+    context_variables: Optional[Dict[str, Any]] = None, 
+    stream=False, 
+    debug=False
 ) -> None:
     client = Swarm()
     print("Starting Swarm CLI 🐝")
