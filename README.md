@@ -200,7 +200,7 @@ Hi John, how can I assist you today?
 
 - Swarm `Agent`s can call python functions directly.
 - Function should usually return a `str` (values will be attempted to be cast as a `str`).
-- If a function returns an `Agent`, execution will be transfered to that `Agent`.
+- If a function returns an `Agent`, execution will be transferred to that `Agent`.
 - If a function defines a `context_variables` parameter, it will be populated by the `context_variables` passed into `client.run()`.
 
 ```python
