@@ -9,8 +9,16 @@ An ergonomic, lightweight multi-agent orchestration framework.
 
 ## Install
 
+Requires Python 3.10+
+
 ```shell
 pip install git+ssh://git@github.com/openai/swarm.git
+```
+
+or
+
+```shell
+pip install git+https://github.com/openai/swarm.git
 ```
 
 ## Usage
@@ -340,6 +348,7 @@ run_demo_loop(agent, stream=True)
 ```
 
 # Contributors
+
 - Ilan Bigio - [ibigio](https://github.com/ibigio)
 - James Hills - [jhills20](https://github.com/jhills20)
 - Shyamal Anadkat - [shyamal-anadkat](https://github.com/shyamal-anadkat)
