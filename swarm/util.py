@@ -29,6 +29,17 @@ def merge_chunk(final_response: dict, delta: dict) -> None:
 
 
 def function_to_json(func) -> dict:
+    """
+    Converts a Python function into a JSON-serializable dictionary
+    that describes the function's signature, including its name,
+    description, and parameters.
+
+    Args:
+        func: The function to be converted.
+
+    Returns:
+        A dictionary representing the function's signature in JSON format.
+    """
     type_map = {
         str: "string",
         int: "integer",
