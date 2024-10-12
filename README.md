@@ -211,7 +211,7 @@ def greet(context_variables, language):
    return "Done"
 
 agent = Agent(
-   functions=[print_hello]
+   functions=[greet]
 )
 
 client.run(
