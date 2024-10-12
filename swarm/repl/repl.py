@@ -58,7 +58,7 @@ def pretty_print_messages(messages) -> None:
 
 
 def run_demo_loop(
-    starting_agent, context_variables={}, stream=False, debug=False
+    starting_agent, context_variables=None, stream=False, debug=False
 ) -> None:
     client = Swarm()
     print("Starting Swarm CLI 🐝")
@@ -73,7 +73,7 @@ def run_demo_loop(
         response = client.run(
             agent=agent,
             messages=messages,
-            context_variables=context_variables,
+            context_variables=context_variables or {},
             stream=stream,
             debug=debug,
         )
