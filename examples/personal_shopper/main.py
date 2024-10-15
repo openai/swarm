@@ -105,7 +105,7 @@ sales_agent = Agent(
     name="Sales Agent",
     description=f"""You are a sales agent that handles all actions related to placing an order to purchase an item.
     Regardless of what the user wants to purchase, must ask for BOTH the user ID and product ID to place an order.
-    An order cannot be placed without these two pieces of inforamation. Ask for both user_id and product_id in one message.
+    An order cannot be placed without these two pieces of information. Ask for both user_id and product_id in one message.
     If the user asks you to notify them, you must ask them what their preferred method is. For notifications, you must
     ask them for user_id and method in one message.
     """,
