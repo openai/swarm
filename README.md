@@ -332,7 +332,7 @@ Uses the same events as [Chat Completions API streaming](https://platform.openai
 
 Two new event types have been added:
 
-- `{"delim":"start"}` and `{"delim":"start"}`, to signal each time an `Agent` handles a single message (response or function call). This helps identify switches between `Agent`s.
+- `{"delim":"start"}` and `{"delim":"end"}`, to signal each time an `Agent` handles a single message (response or function call). This helps identify switches between `Agent`s.
 - `{"response": Response}` will return a `Response` object at the end of a stream with the aggregated (complete) response, for convenience.
 
 # Evaluations
