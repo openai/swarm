@@ -2,7 +2,7 @@
 
 # Swarm (experimental, educational)
 
-> [!IMPORTANT] Swarm is now replaced by the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), which is a production-ready evolution of Swarm. The Agents SDK features key improvements and will be actively maintained by the OpenAI team.
+> [!WARNING] Swarm is now replaced by the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), which is a production-ready evolution of Swarm. The Agents SDK features key improvements and will be actively maintained by the OpenAI team.
 >
 > We recommend migrating to the Agents SDK for all production use cases.
 
