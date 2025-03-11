@@ -1,5 +1,6 @@
 import inspect
 from datetime import datetime
+from typing import Any, Callable, Dict, List
 
 
 def debug_print(debug: bool, *args: str) -> None:
@@ -10,7 +11,7 @@ def debug_print(debug: bool, *args: str) -> None:
     print(f"\033[97m[\033[90m{timestamp}\033[97m]\033[90m {message}\033[0m")
 
 
-def merge_fields(target, source):
+def merge_fields(target: Dict[str, Any], source: Dict[str, Any]) -> None:
     for key, value in source.items():
         if isinstance(value, str):
             target[key] += value
@@ -18,7 +19,7 @@ def merge_fields(target, source):
             merge_fields(target[key], value)
 
 
-def merge_chunk(final_response: dict, delta: dict) -> None:
+def merge_chunk(final_response: Dict[str, Any], delta: Dict[str, Any]) -> None:
     delta.pop("role", None)
     merge_fields(final_response, delta)
 
@@ -28,7 +29,7 @@ def merge_chunk(final_response: dict, delta: dict) -> None:
         merge_fields(final_response["tool_calls"][index], tool_calls[0])
 
 
-def function_to_json(func) -> dict:
+def function_to_json(func: Callable) -> Dict[str, Any]:
     """
     Converts a Python function into a JSON-serializable dictionary
     that describes the function's signature, including its name,
