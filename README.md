@@ -2,12 +2,10 @@
 
 # Swarm (experimental, educational)
 
-An educational framework exploring ergonomic, lightweight multi-agent orchestration.
-
-> [!WARNING]
-> Swarm is currently an experimental sample framework intended to explore ergonomic interfaces for multi-agent systems. It is not intended to be used in production, and therefore has no official support. (This also means we will not be reviewing PRs or issues!)
+> [!IMPORTANT]
+> Swarm is now replaced by the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), which is a production-ready evolution of Swarm. The Agents SDK features key improvements and will be actively maintained by the OpenAI team.
 >
-> The primary goal of Swarm is to showcase the handoff & routines patterns explored in the [Orchestrating Agents: Handoffs & Routines](https://cookbook.openai.com/examples/orchestrating_agents) cookbook. It is not meant as a standalone library, and is primarily for educational purposes.
+> We recommend migrating to the Agents SDK for all production use cases.
 
 ## Install
 
