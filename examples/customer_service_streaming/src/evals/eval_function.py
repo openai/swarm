@@ -1,24 +1,37 @@
-from src.utils import get_completion
-from configs.prompts import EVAL_GROUNDTRUTH_PROMPT
-import json
+from examples.customer_service_streaming.src.utils import get_completion
+from examples.customer_service_streaming.configs.prompts import (
+    EVAL_GROUNDTRUTH_PROMPT
+)
 import re
 import ast
-from openai import OpenAI
+
 
 class EvalFunction:
 
-  def __init__(self, client, plan, task):
+    def __init__(self, client, plan, task):
         self.client = client
-        self.eval_function =  getattr(self, task.eval_function, None)
+        self.eval_function = getattr(self, task.eval_function, None)
         self.task = task
         self.groundtruth = task.groundtruth
         self.plan = plan
 
-  def default(self):
-    response = get_completion(self.client, [{"role": "user", "content": EVAL_GROUNDTRUTH_PROMPT.format(self.plan, self.groundtruth)}])
-    if response.content.lower() == 'true':
-        return True
-    return False
+    def default(self):
+        response = get_completion(
+            self.client,
+            self.plan['step'][-1],
+            [
+                {
+                    "role": "user",
+                    "content": EVAL_GROUNDTRUTH_PROMPT.format(
+                        self.plan,
+                        self.groundtruth
+                    )
+                }
+            ]
+        )
+        if response.content.lower() == 'true':
+            return True
+        return False
     
   def numeric(self):
     number_pattern = r'\d+'
