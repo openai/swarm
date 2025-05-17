@@ -32,31 +32,31 @@ class EvalFunction:
         if response.content.lower() == 'true':
             return True
         return False
-    
-  def numeric(self):
-    number_pattern = r'\d+'
-    response = self.plan['step'][-1]
-    # Find all occurrences of numbers in the sentence
-    numbers = re.findall(number_pattern, response)
+
+    def numeric(self):
+        number_pattern = r'\d+'
+        response = self.plan['step'][-1]
+        # Find all occurrences of numbers in the sentence
+        numbers = re.findall(number_pattern, response)
     print(f"Number(s) to compare: {numbers}")
     try:
         ground_truth = ast.literal_eval(self.groundtruth)
-    except:
-       print(f"Ground truth is not numeric: {self.groundtruth}")
-       return False
+    except (ValueError, SyntaxError) as error:
+        print(f"Ground truth is not numeric: {self.groundtruth} - {error}")
+        return False
     try:
         for n in numbers:
             if int(ground_truth) == int(n) or float(ground_truth) == float(n):
                 return True
     except:
         print(f"Error in comparing numbers: {numbers}")
-    return False
+        return False
 
-  def name(self):
-    extract_name_prompt = "You will be provided with a sentence. Your goal is to extract the full names you see in the sentence. Return the names as an array of strings."
-    response = self.plan['step'][-1]
-    completion_result = self.client.chat.completions.create(
-       model="gpt-4-turbo-preview",
+    def name(self):
+        extract_name_prompt = "You will be provided with a sentence. Your goal is to extract the full names you see in the sentence. Return the names as an array of strings."
+        response = self.plan['step'][-1]
+        completion_result = self.client.chat.completions.create(
+           model="gpt-4-turbo-preview",
        max_tokens=100,
        temperature=0,
        messages=[
