@@ -1,4 +1,4 @@
-from configs.agents import *
+from examples.airline.configs.agents import *
 from swarm.repl import run_demo_loop
 
 context_variables = {
