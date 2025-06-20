@@ -3,10 +3,10 @@ import copy
 import json
 from collections import defaultdict
 from typing import List, Callable, Union
-
+from pprint import pprint
 # Package/library imports
 from openai import OpenAI
-
+from .util_tool_use import conversion_for_tool_use
 
 # Local imports
 from .util import function_to_json, debug_print, merge_chunk
@@ -22,12 +22,16 @@ from .types import (
 
 __CTX_VARS_NAME__ = "context_variables"
 
+def debug_pprint(debug_enabled, data):
+    if debug_enabled:
+        pprint(data)
 
 class Swarm:
     def __init__(self, client=None):
         if not client:
             client = OpenAI()
         self.client = client
+        self.LMstudioClient = OpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio")
 
     def get_chat_completion(
         self,
@@ -46,6 +50,10 @@ class Swarm:
         )
         messages = [{"role": "system", "content": instructions}] + history
         debug_print(debug, "Getting chat completion for...:", messages)
+
+        for obj in messages:
+            if obj.get("content") is None:
+                obj["content"] = ""
 
         tools = [function_to_json(f) for f in agent.functions]
         # hide context_variables from model
@@ -66,7 +74,17 @@ class Swarm:
         if tools:
             create_params["parallel_tool_calls"] = agent.parallel_tool_calls
 
-        return self.client.chat.completions.create(**create_params)
+        if agent.model == "gpt-4o":
+            print("openai called")
+            return conversion_for_tool_use(self.client.chat.completions.create(**create_params), agent.model)
+        else:
+            create_params["timeout"] = 3600
+            debug_print(debug, "直前:")
+            debug_pprint(debug, create_params)
+            returnobj = self.LMstudioClient.chat.completions.create(**create_params)
+            debug_print(debug, "直後:")
+            debug_pprint(debug, returnobj)
+            return conversion_for_tool_use(returnobj, agent.model)
 
     def handle_function_result(self, result, debug) -> Result:
         match result:
@@ -206,6 +224,9 @@ class Swarm:
                     arguments=tool_call["function"]["arguments"],
                     name=tool_call["function"]["name"],
                 )
+
+                if tool_call["type"].startswith("function"):
+                    tool_call["type"]="function"
                 tool_call_object = ChatCompletionMessageToolCall(
                     id=tool_call["id"], function=function, type=tool_call["type"]
                 )

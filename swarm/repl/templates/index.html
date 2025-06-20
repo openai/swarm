@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- モバイル表示対応のためのビューポート設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日程管理AIエージェント</title>
+  <!-- SocketIO クライアントライブラリ（CDN版） -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js" crossorigin="anonymous"></script>
+  <!-- Prism.js シンタックスハイライト用 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/toolbar/prism-toolbar.css" />
+
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    /* ヘッダー＋入力フォーム固定部 */
+    .header-container {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 100px;
+      padding: 5px 10px;
+      box-sizing: border-box;
+      background: #fff;
+      border-bottom: 1px solid #ccc;
+      z-index: 1000;
+    }
+    .header-container h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .chat-history {
+      margin-top: 110px; /* ヘッダーの下に配置 */
+      height: calc(100vh - 200px); /* ヘッダーと入力フォームの分を除いた高さ */
+      overflow-y: auto;
+      padding: 10px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+      white-space: pre-line;
+    }
+    .chat-history p, .chat-history div.message {
+      white-space: pre-line;
+      margin: 0 0 1em 0;
+    }
+    .input-container {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      background: #fff;
+      border-top: 1px solid #ccc;
+    }
+    textarea {
+      width: 80%;
+      height: 40px;
+      vertical-align: middle;
+      font-size: 16px;
+    }
+    button {
+      vertical-align: middle;
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+    .scroll-btn {
+      display: block;
+      margin: 10px auto;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 24px;
+      cursor: pointer;
+      position: absolute;
+      bottom: 300px;
+      right: 20px;
+    }
+    /* モバイル用レスポンシブ調整 */
+    @media (max-width: 600px) {
+      .header-container {
+        height: 70px;
+        padding: 5px;
+      }
+      .header-container h3 {
+        font-size: 16px;
+      }
+      .chat-history {
+        margin-top: 80px;
+        height: calc(100vh - 150px); /* ヘッダー(70px) + 入力フォーム(80px) を除く */
+        padding: 5px;
+      }
+      .input-container {
+        padding: 5px;
+      }
+      textarea {
+        width: 70%;
+        height: 35px;
+        font-size: 14px;
+      }
+      button {
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+      .scroll-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+        bottom: 120px;
+        right: 10px;
+      }
+    }
+/* 追加：送信者ラベルのスタイル */
+    .sender-label {
+      font-weight: bold;
+    }
+    .sender-label.user {
+      color: blue; /* ユーザー用（例） */
+    }
+    .sender-label.llm {
+      color: red;  /* LLM用（例） */
+    }
+    .sender-label.system {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <!-- Prism.js スクリプト -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/toolbar/prism-toolbar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+  
+  <!-- ヘッダー部 -->
+  <div class="header-container">
+    <h3>日程管理AIエージェント</h3>
+  </div>
+
+  <!-- チャット履歴エリア -->
+  <div id="chat-history" class="chat-history">
+    <!-- サーバー起動時にテンプレートから既存のメッセージを表示 -->
+    {% for msg in messages %}
+      {% if msg.sender == "User" %}
+        <div class="message">
+          <span class="sender-label user">User</span><br>
+          {{ msg.message|safe }}
+        </div>
+      {% else %}
+        <div class="message">
+          <span class="sender-label llm">LLM</span><br>
+          {{ msg.message|safe }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <button id="scroll-btn" class="scroll-btn">&#8595;</button>
+
+  <!-- 入力フォーム部 -->
+  <div class="input-container">
+    <form id="chat-form">
+      <textarea id="user_input" placeholder="メッセージを入力"></textarea>
+      <button type="submit">送信</button>
+    </form>
+    <!-- AI対話の中断メッセージを送信するボタン -->
+    <button id="stop_user_simulation_btn" style="margin-top:5px;">AI対話モードの中断</button>
+  </div>
+
+  <script>
+    // 受信テキスト内のマークダウン記法のコードブロックを <pre><code> ブロックに変換する関数
+    function convertMarkdownCodeBlocks(text) {
+      return text.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+        var className = lang ? "language-" + lang : "";
+        return '<pre><code class="' + className + '">' + code + '</code></pre>';
+      });
+    }
+
+    // SocketIO サーバーへ接続
+    var socket = io();
+
+    // フォーム送信時のイベント
+    document.getElementById("chat-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      var inputElem = document.getElementById("user_input");
+      var message = inputElem.value.trim();
+      if (message) {
+        // サーバーへ 'send_message' イベントを送信
+        socket.emit('send_message', { message: message });
+        inputElem.value = "";
+      }
+    });
+
+    // Ctrl+Enterでフォーム送信
+    document.getElementById("user_input").addEventListener("keydown", function(e) {
+      if (e.ctrlKey && e.key === "Enter") {
+        document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+      }
+    });
+
+    document.getElementById("stop_user_simulation_btn").addEventListener("click", function(){
+      socket.emit('stop_user_simulation', {});
+    });
+
+    // サーバーから新規メッセージを受信
+    socket.on('new_message', function(data) {
+      console.log(data)
+      var chatHistory = document.getElementById("chat-history");
+      var messageContainer;
+      // もしメッセージ内にコードブロックが含まれているなら、<p>ではなく<div>で挿入する
+      if (data.message.indexOf("<pre") !== -1) {
+        messageContainer = document.createElement("div");
+        messageContainer.className = "message";
+      } else {
+        messageContainer = document.createElement("p");
+      }
+      var senderLabel;
+      if (data.sender === "User") {
+        senderLabel = '<span class="sender-label user">User</span><br>';
+      } else if (data.sender === "system") {
+        senderLabel = '<span class="sender-label system">SYSTEM</span><br>';
+      } else {
+        senderLabel = '<span class="sender-label llm">'+data.sender+'</span><br>';
+      }
+      // まず、トリプルバッククォート記法を変換
+      var formattedMessage = convertMarkdownCodeBlocks(data.message);
+      // innerHTMLを使ってHTMLタグを反映させる
+      messageContainer.innerHTML = senderLabel + formattedMessage;
+      chatHistory.appendChild(messageContainer);
+      // 新規メッセージ受信時に自動スクロール
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+      // 動的に追加されたコードブロックに対して Prism を再適用
+      if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+      } else {
+        console.log("prism undefined");
+      }
+    });
+
+    // スクロールボタンのイベント
+    document.getElementById("scroll-btn").addEventListener("click", function() {
+      var chatHistory = document.getElementById("chat-history");
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    });
+  </script>
+
+</body>
+</html>

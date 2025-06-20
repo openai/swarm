@@ -1,5 +1,6 @@
 import inspect
 from datetime import datetime
+from typing import List, get_origin, get_args
 
 
 def debug_print(debug: bool, *args: str) -> None:
@@ -59,13 +60,23 @@ def function_to_json(func) -> dict:
 
     parameters = {}
     for param in signature.parameters.values():
-        try:
-            param_type = type_map.get(param.annotation, "string")
-        except KeyError as e:
-            raise KeyError(
-                f"Unknown type annotation {param.annotation} for parameter {param.name}: {str(e)}"
-            )
-        parameters[param.name] = {"type": param_type}
+        annotation = param.annotation
+        # もし型注釈が typing.List[...] の場合、get_origin でリストか確認
+        if get_origin(annotation) == list:
+            # 内包する型を取得（指定されていない場合は string とする）
+            args = get_args(annotation)
+            if args:
+                inner_type = type_map.get(args[0], "string")
+            else:
+                inner_type = "string"
+            parameters[param.name] = {
+                "type": "array",
+                "items": {"type": inner_type}
+            }
+        else:
+            # それ以外の場合は、type_map により型文字列を決定（存在しなければ "string" とする）
+            param_type = type_map.get(annotation, "string")
+            parameters[param.name] = {"type": param_type}
 
     required = [
         param.name
