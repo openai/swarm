@@ -1,6 +1,6 @@
 # Agent-Mesh Trust Layer for OpenAI Swarm
 
-This contrib module adds **trust-verified handoffs** to OpenAI Swarm using the [Agent-Mesh](https://github.com/imran-siddique/agent-mesh) CMVK identity layer.
+This contrib module adds **trust-verified handoffs** to OpenAI Swarm using the [Agent-Mesh](https://github.com/microsoft/agent-governance-toolkit) CMVK identity layer.
 
 ## The Problem
 
@@ -201,6 +201,6 @@ Trust verification ensures only vetted agents participate in your swarm.
 
 ## Related
 
-- [Agent-Mesh](https://github.com/imran-siddique/agent-mesh) — Full trust/identity layer
+- [Agent-Mesh](https://github.com/microsoft/agent-governance-toolkit) — Full trust/identity layer
 - [OpenAI Swarm](https://github.com/openai/swarm) — Multi-agent orchestration
 - [A2A Protocol](https://github.com/a2aproject/A2A) — Agent-to-Agent communication
