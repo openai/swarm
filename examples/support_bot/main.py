@@ -7,7 +7,7 @@ from swarm import Agent
 from swarm.repl import run_demo_loop
 
 # Initialize connections
-client = OpenAI()
+client = OpenAI(timeout=60.0, max_retries=3)
 qdrant = qdrant_client.QdrantClient(host="localhost")
 
 # Set embedding model

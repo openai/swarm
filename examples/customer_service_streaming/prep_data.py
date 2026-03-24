@@ -2,7 +2,7 @@ import os
 import json
 from openai import OpenAI
 
-client = OpenAI()
+client = OpenAI(timeout=60.0, max_retries=3)
 GPT_MODEL = 'gpt-4'
 EMBEDDING_MODEL = "text-embedding-3-large"
 

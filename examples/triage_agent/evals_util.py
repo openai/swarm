@@ -3,7 +3,7 @@ import instructor
 from pydantic import BaseModel
 from typing import Optional
 
-__client = instructor.from_openai(OpenAI())
+__client = instructor.from_openai(OpenAI(timeout=60.0, max_retries=3))
 
 
 class BoolEvalResult(BaseModel):

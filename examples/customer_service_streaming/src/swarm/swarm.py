@@ -19,7 +19,7 @@ class Swarm:
         """
         Processes all tasks in the order they are listed in self.tasks.
         """
-        client = OpenAI()
+        client = OpenAI(timeout=60.0, max_retries=3)
         # Initialize swarm first
         if self.engine_name == 'assistants':
             print(f"{Colors.GREY}Selected engine: Assistants{Colors.ENDC}")
