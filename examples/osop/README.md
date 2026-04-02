@@ -1,6 +1,6 @@
 # OSOP Workflow Examples for Swarm
 
-[OSOP](https://github.com/osopcloud/osop-spec) (Open Standard for Orchestration Protocols) is a portable YAML format for describing multi-agent workflows — think OpenAPI, but for agent orchestration.
+[OSOP](https://github.com/Archie0125/osop-spec) (Open Standard for Orchestration Protocols) is a portable YAML format for describing multi-agent workflows — think OpenAPI, but for agent orchestration.
 
 ## What's Here
 
@@ -15,7 +15,7 @@ Swarm's lightweight agent handoff pattern is elegant and powerful. OSOP provides
 - **Documented** — readable YAML that non-developers can understand
 - **Validated** — check workflow structure before running it
 - **Ported** — same workflow definition works across Swarm, AutoGen, CrewAI, etc.
-- **Visualized** — render the workflow as a graph in the [OSOP Editor](https://github.com/osopcloud/osop-editor)
+- **Visualized** — render the workflow as a graph in the [OSOP Editor](https://github.com/Archie0125/osop-editor)
 
 ## Quick Start
 
@@ -40,6 +40,6 @@ cat swarm-customer-service.osop.yaml
 
 ## Learn More
 
-- [OSOP Spec](https://github.com/osopcloud/osop-spec) — full specification
-- [OSOP Examples](https://github.com/osopcloud/osop-examples) — 30+ workflow templates
-- [OSOP Editor](https://github.com/osopcloud/osop-editor) — visual workflow editor
+- [OSOP Spec](https://github.com/Archie0125/osop-spec) — full specification
+- [OSOP Examples](https://github.com/Archie0125/osop-examples) — 30+ workflow templates
+- [OSOP Editor](https://github.com/Archie0125/osop-editor) — visual workflow editor
