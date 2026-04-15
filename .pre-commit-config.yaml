@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/hhatto/autopep8
-    rev: 0fa37c25a2a48abfbd18cdfac91985e21bdbf249
+    rev: 0fa37c25a2a48abfbd18cdfac91985e21bdbf249  # v2.1.0
     hooks:
       - id: autopep8
         args:
