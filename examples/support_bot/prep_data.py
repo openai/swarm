@@ -6,7 +6,7 @@ import qdrant_client
 from openai import OpenAI
 from qdrant_client.http import models as rest
 
-client = OpenAI()
+client = OpenAI(timeout=60.0, max_retries=3)
 GPT_MODEL = "gpt-4o"
 EMBEDDING_MODEL = "text-embedding-3-large"
 

@@ -4,7 +4,7 @@ import qdrant_client
 import re
 
 # # # Initialize connections
-client = OpenAI()
+client = OpenAI(timeout=60.0, max_retries=3)
 qdrant = qdrant_client.QdrantClient(host='localhost')#, prefer_grpc=True)
 
 # # Set embedding model
