@@ -1,0 +1,93 @@
+# OpenAI Swarm Agent Handoff Pattern in OSOP Format
+osop_version: "1.0"
+id: swarm-customer-service
+name: Swarm Customer Service Handoff
+description: Multi-agent customer service with intelligent routing and handoffs between specialist agents.
+tags: [openai, swarm, handoff, customer-service]
+
+nodes:
+  - id: triage-agent
+    type: agent
+    subtype: coordinator
+    name: Triage Agent
+    purpose: Classify customer intent and route to the appropriate specialist agent.
+    runtime:
+      provider: openai
+      model: gpt-4
+      config:
+        system_prompt: |
+          You are a customer service triage agent. Classify the customer's issue
+          and hand off to the appropriate specialist.
+        temperature: 0.3
+
+  - id: billing-agent
+    type: agent
+    subtype: worker
+    name: Billing Specialist
+    purpose: Handle billing inquiries, refunds, and payment issues.
+    runtime:
+      provider: openai
+      model: gpt-4
+      config:
+        tools: [lookup_invoice, process_refund, update_payment]
+
+  - id: technical-agent
+    type: agent
+    subtype: worker
+    name: Technical Support
+    purpose: Troubleshoot technical issues and guide users through solutions.
+    runtime:
+      provider: openai
+      model: gpt-4
+      config:
+        tools: [check_system_status, run_diagnostics, create_ticket]
+
+  - id: sales-agent
+    type: agent
+    subtype: worker
+    name: Sales Specialist
+    purpose: Handle upgrade requests, new subscriptions, and product questions.
+    runtime:
+      provider: openai
+      model: gpt-4
+      config:
+        tools: [check_pricing, create_quote, process_upgrade]
+
+  - id: escalation
+    type: human
+    name: Human Escalation
+    description: Escalate to human agent when AI cannot resolve the issue.
+
+edges:
+  - from: triage-agent
+    to: billing-agent
+    mode: conditional
+    condition: intent == 'billing'
+    label: Billing issues
+
+  - from: triage-agent
+    to: technical-agent
+    mode: conditional
+    condition: intent == 'technical'
+    label: Technical support
+
+  - from: triage-agent
+    to: sales-agent
+    mode: conditional
+    condition: intent == 'sales'
+    label: Sales inquiries
+
+  - from: billing-agent
+    to: escalation
+    mode: fallback
+    label: Cannot resolve
+
+  - from: technical-agent
+    to: escalation
+    mode: fallback
+    label: Cannot resolve
+
+  - from: sales-agent
+    to: escalation
+    mode: fallback
+    label: Cannot resolve
