@@ -52,6 +52,8 @@ class EvalFunction:
          },
          {"role": "user", "content": f"SENTENCE:\n{response}"}]
     )
+    if not completion_result.choices or completion_result.choices[0].message is None:
+        raise ValueError("LLM returned empty or filtered response")
     name_extract = completion_result.choices[0].message.content
     print(f"Name extracted: {name_extract}")
     try:
