@@ -1,4 +1,5 @@
 from swarm.util import function_to_json
+from typing import Dict, List
 
 
 def test_basic_function():
@@ -47,4 +48,16 @@ def test_complex_function():
                 "required": ["arg1", "arg2"],
             },
         },
+    }
+
+
+def test_function_with_generic_collection_types():
+    def function_with_generics(items: list[str], metadata: Dict[str, str], aliases: List[str]):
+        pass
+
+    result = function_to_json(function_with_generics)
+    assert result["function"]["parameters"]["properties"] == {
+        "items": {"type": "array"},
+        "metadata": {"type": "object"},
+        "aliases": {"type": "array"},
     }
