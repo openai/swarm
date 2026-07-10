@@ -143,3 +143,68 @@ def test_handoff(mock_openai_client: MockOpenAIClient):
     assert response.agent == agent2
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == DEFAULT_RESPONSE_CONTENT
+
+
+def test_streaming_message_sender_after_handoff():
+    # In streaming mode, the assistant message stored for each turn must be
+    # stamped with the *active* agent's name. After a handoff, the second turn
+    # is produced by agent2, so its stored sender must be "Agent 2" -- matching
+    # the streamed delta's sender. Regression test for the message dict using
+    # the starting agent's name instead of the active agent's.
+    class _Delta:
+        def __init__(self, d):
+            self._d = d
+
+        def json(self):
+            return json.dumps(self._d)
+
+    class _Chunk:
+        def __init__(self, d):
+            self.choices = [Mock(delta=_Delta(d))]
+
+    class _Completions:
+        def __init__(self):
+            self.n = 0
+
+        def create(self, **kwargs):
+            self.n += 1
+            if self.n == 1:
+                return iter([_Chunk({
+                    "role": "assistant", "content": "",
+                    "tool_calls": [{
+                        "index": 0, "id": "call_1", "type": "function",
+                        "function": {"name": "transfer_to_agent2", "arguments": "{}"},
+                    }],
+                })])
+            return iter([_Chunk({"role": "assistant", "content": "Hi from 2"})])
+
+    class _Client:
+        def __init__(self):
+            self.chat = Mock(completions=_Completions())
+
+    agent2 = Agent(name="Agent 2")
+
+    def transfer_to_agent2():
+        return agent2
+
+    agent1 = Agent(name="Agent 1", functions=[transfer_to_agent2])
+
+    client = Swarm(client=_Client())
+    stream = client.run(
+        agent=agent1,
+        messages=[{"role": "user", "content": "hi"}],
+        stream=True,
+    )
+    delta_senders, response = [], None
+    for chunk in stream:
+        if isinstance(chunk, dict):
+            if chunk.get("sender"):
+                delta_senders.append(chunk["sender"])
+            if "response" in chunk:
+                response = chunk["response"]
+
+    assistant = [m for m in response.messages if m.get("role") == "assistant"]
+    # The post-handoff assistant turn belongs to agent2.
+    assert assistant[-1]["sender"] == "Agent 2"
+    # ... and the stored sender agrees with the streamed delta.
+    assert delta_senders[-1] == "Agent 2"
