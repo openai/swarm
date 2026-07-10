@@ -155,7 +155,7 @@ class Swarm:
 
             message = {
                 "content": "",
-                "sender": agent.name,
+                "sender": active_agent.name,
                 "role": "assistant",
                 "function_call": None,
                 "tool_calls": defaultdict(
