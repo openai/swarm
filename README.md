@@ -57,7 +57,7 @@ New paths converge gracefully,
 What can I assist?
 ```
 
-> **Tip:** `Swarm` accepts an optional OpenAI client. The same `base_url` pattern works with any OpenAI-compatible multi-model gateway — for example [DaoXE](https://daoxe.com?utm_source=github&utm_medium=organic&utm_campaign=swarm&utm_content=openai) at `https://api.daoxe.com/v1`:
+> **Tip:** `Swarm` accepts an optional OpenAI client. The same `base_url` pattern works with any OpenAI-compatible multi-model gateway — for example [DaoXE](https://daoxe.com) at `https://api.daoxe.com/v1`:
 >
 > ```python
 > from openai import OpenAI
