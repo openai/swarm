@@ -143,3 +143,19 @@ def test_handoff(mock_openai_client: MockOpenAIClient):
     assert response.agent == agent2
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == DEFAULT_RESPONSE_CONTENT
+
+
+def test_run_preserves_agent_sender_in_history(mock_openai_client: MockOpenAIClient):
+    agent = Agent(name="Test Agent")
+    mock_openai_client.set_response(
+        create_mock_response(
+            {"role": "assistant", "content": DEFAULT_RESPONSE_CONTENT}
+        )
+    )
+
+    response = Swarm(client=mock_openai_client).run(
+        agent=agent,
+        messages=[{"role": "user", "content": "Hello"}],
+    )
+
+    assert response.messages[-1]["sender"] == agent.name
