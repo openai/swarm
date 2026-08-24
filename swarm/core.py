@@ -267,10 +267,9 @@ class Swarm:
             )
             message = completion.choices[0].message
             debug_print(debug, "Received completion:", message)
-            message.sender = active_agent.name
-            history.append(
-                json.loads(message.model_dump_json())
-            )  # to avoid OpenAI types (?)
+            message_dict = json.loads(message.model_dump_json())
+            message_dict["sender"] = active_agent.name
+            history.append(message_dict)  # to avoid OpenAI types (?)
 
             if not message.tool_calls or not execute_tools:
                 debug_print(debug, "Ending turn.")
