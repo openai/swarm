@@ -211,7 +211,8 @@ class Swarm:
                 )
                 tool_calls.append(tool_call_object)
 
-            # handle function calls, updating context_variables, and switching agents
+            # handle function calls, updating context_variables, and switching
+            # agents
             partial_response = self.handle_tool_calls(
                 tool_calls, active_agent.functions, context_variables, debug
             )
@@ -267,16 +268,16 @@ class Swarm:
             )
             message = completion.choices[0].message
             debug_print(debug, "Received completion:", message)
-            message.sender = active_agent.name
-            history.append(
-                json.loads(message.model_dump_json())
-            )  # to avoid OpenAI types (?)
+            msg_dict = json.loads(message.model_dump_json())
+            msg_dict["sender"] = active_agent.name
+            history.append(msg_dict)
 
             if not message.tool_calls or not execute_tools:
                 debug_print(debug, "Ending turn.")
                 break
 
-            # handle function calls, updating context_variables, and switching agents
+            # handle function calls, updating context_variables, and switching
+            # agents
             partial_response = self.handle_tool_calls(
                 message.tool_calls, active_agent.functions, context_variables, debug
             )
