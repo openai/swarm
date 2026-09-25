@@ -11,7 +11,8 @@ DEFAULT_RESPONSE_CONTENT = "sample response content"
 def mock_openai_client():
     m = MockOpenAIClient()
     m.set_response(
-        create_mock_response({"role": "assistant", "content": DEFAULT_RESPONSE_CONTENT})
+        create_mock_response(
+            {"role": "assistant", "content": DEFAULT_RESPONSE_CONTENT})
     )
     return m
 
@@ -49,7 +50,8 @@ def test_tool_call(mock_openai_client: MockOpenAIClient):
             create_mock_response(
                 message={"role": "assistant", "content": ""},
                 function_calls=[
-                    {"name": "get_weather", "args": {"location": expected_location}}
+                    {"name": "get_weather",
+                     "args": {"location": expected_location}}
                 ],
             ),
             create_mock_response(
@@ -88,7 +90,8 @@ def test_execute_tools_false(mock_openai_client: MockOpenAIClient):
             create_mock_response(
                 message={"role": "assistant", "content": ""},
                 function_calls=[
-                    {"name": "get_weather", "args": {"location": expected_location}}
+                    {"name": "get_weather",
+                     "args": {"location": expected_location}}
                 ],
             ),
             create_mock_response(
@@ -143,3 +146,55 @@ def test_handoff(mock_openai_client: MockOpenAIClient):
     assert response.agent == agent2
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == DEFAULT_RESPONSE_CONTENT
+
+
+def test_sender_preserved_in_history_after_handoff(
+        mock_openai_client: MockOpenAIClient):
+    """Regression test: message.sender must be preserved in history after handoff.
+
+    In non-streaming run(), message.sender was set dynamically but then dropped
+    by model_dump_json() (Pydantic excludes extra attributes). The stored history
+    message must retain the sender field so downstream consumers know which
+    agent produced each response.
+    """
+    agent2 = Agent(name="Agent 2")
+
+    def transfer_to_agent2():
+        return agent2
+
+    agent1 = Agent(name="Test Agent 1", functions=[transfer_to_agent2])
+    messages = [{"role": "user", "content": "Transfer to agent 2"}]
+
+    # First response triggers the handoff, second is the agent2 response
+    mock_openai_client.set_sequential_responses(
+        [
+            create_mock_response(
+                message={"role": "assistant", "content": ""},
+                function_calls=[{"name": "transfer_to_agent2"}],
+            ),
+            create_mock_response(
+                {"role": "assistant", "content": "Hello from agent 2"}
+            ),
+        ]
+    )
+
+    client = Swarm(client=mock_openai_client)
+    response = client.run(agent=agent1, messages=messages)
+
+    # Verify the final agent is agent2
+    assert response.agent == agent2
+
+    # Find all assistant messages in history
+    assistant_messages = [
+        m for m in response.messages if m.get("role") == "assistant"
+    ]
+
+    # Both assistant messages must have a sender field
+    assert all("sender" in m for m in assistant_messages), \
+        "All assistant messages must have a sender field in history"
+
+    # First turn: sender should be agent1 (starting agent)
+    assert assistant_messages[0]["sender"] == "Test Agent 1"
+
+    # Second turn (after handoff): sender should be agent2
+    assert assistant_messages[1]["sender"] == "Agent 2"
