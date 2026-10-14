@@ -26,6 +26,7 @@ def test_run_with_simple_message(mock_openai_client: MockOpenAIClient):
     # assert response content
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == DEFAULT_RESPONSE_CONTENT
+    assert response.messages[-1]["sender"] == agent.name
 
 
 def test_tool_call(mock_openai_client: MockOpenAIClient):
@@ -143,3 +144,5 @@ def test_handoff(mock_openai_client: MockOpenAIClient):
     assert response.agent == agent2
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == DEFAULT_RESPONSE_CONTENT
+    assert response.messages[0]["sender"] == agent1.name
+    assert response.messages[-1]["sender"] == agent2.name
