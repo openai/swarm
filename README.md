@@ -2,6 +2,8 @@
 
 # Swarm (experimental, educational)
 
+[English](README.md) | [简体中文](https://github.com/openai/swarm/blob/main/README.zh.md)
+
 > [!IMPORTANT]
 > Swarm is now replaced by the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python), which is a production-ready evolution of Swarm. The Agents SDK features key improvements and will be actively maintained by the OpenAI team.
 >
