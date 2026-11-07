@@ -59,6 +59,10 @@ def function_to_json(func) -> dict:
 
     parameters = {}
     for param in signature.parameters.values():
+        # Skip *args and **kwargs — they cannot be represented in a JSON
+        # function schema and were incorrectly included as required params.
+        if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+            continue
         try:
             param_type = type_map.get(param.annotation, "string")
         except KeyError as e:
@@ -71,6 +75,7 @@ def function_to_json(func) -> dict:
         param.name
         for param in signature.parameters.values()
         if param.default == inspect._empty
+        and param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
     ]
 
     return {
