@@ -111,7 +111,19 @@ class Swarm:
                     }
                 )
                 continue
-            args = json.loads(tool_call.function.arguments)
+            try:
+                args = json.loads(tool_call.function.arguments)
+            except json.JSONDecodeError as e:
+                debug_print(debug, f"Failed to parse arguments for tool {name}: {e}")
+                partial_response.messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "tool_name": name,
+                        "content": f"Error: Invalid JSON arguments for tool {name}: {e}",
+                    }
+                )
+                continue
             debug_print(
                 debug, f"Processing tool call: {name} with arguments {args}")
 
